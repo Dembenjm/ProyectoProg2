@@ -141,23 +141,19 @@ void dibujar_personaje()
                   printf("tiempo_luz=%d",tiempo_luz);
                   if(player.dir==0) //ARRIBA
                   {
-                        stretch_blit(luzbmp, luz, player.dir*40,0,40,120,0,0,40,120);
-                        draw_sprite(buffer,luz,player.px,player.py-120);
+                        triangle(buffer, player.px, player.py-120, player.px+20, player.py, player.px+40, player.py-120,makeacol(255,255,0,0));
                   }
                   else if(player.dir==1) //IZQUIERDA
                   {
-                        stretch_blit(luzbmp, luz, player.dir*40,0,120,120,0,0,120,120);
-                        draw_sprite(buffer,luz,player.px,player.py);
+                        triangle(buffer, player.px-120, player.py+40, player.px, player.py+20, player.px-120, player.py,makeacol(255,255,0,0));
                   }
                   else if(player.dir==2)//ABAJO
                   {
-                        stretch_blit(luzbmp, luz, player.dir*40,0,40,120,0,0,40,120);
-                        draw_sprite(buffer,luz,player.px,player.py-120);
+                        triangle(buffer, player.px+40, player.py+160, player.px+20, player.py+40, player.px, player.py+160,makeacol(255,255,0,0));
                   }
                   else //DERECHA
                   {
-                        stretch_blit(luzbmp, luz, player.dir*40,0,40,120,0,0,40,120);
-                        draw_sprite(buffer,luz,player.px,player.py-120);
+                        triangle(buffer, player.px+160, player.py, player.px+40, player.py+20, player.px+160, player.py+40,makeacol(255,255,0,0));
                   }
             }
             else{player.encendida=0;}
