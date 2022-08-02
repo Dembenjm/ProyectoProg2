@@ -70,6 +70,7 @@ int main()
       return 0;
 }
 END_OF_MAIN(); //allegro requiere que se le indique donde termina el main
+
 void cargar_bitmaps()
 {
       buffer=create_bitmap(SCREEN_W,SCREEN_H);//el buffer es creado con el ancho y alto de la pantalla
@@ -82,6 +83,7 @@ void cargar_bitmaps()
       luz=create_bitmap(40,120);
       luzbmp=load_bitmap("luz.bmp",NULL);
 }
+
 void importar_mapa(int mapa[N][M])
 {
       int i,j;
@@ -101,6 +103,7 @@ void importar_mapa(int mapa[N][M])
       }
       fclose(fdata);
 }
+
 void pintar_fondo(int mapa[N][M])
 {
       int i,j;
@@ -118,8 +121,8 @@ void pintar_fondo(int mapa[N][M])
                   }
                   if(mapa[i][j]==2)
                   {
-                        stretch_blit(bateriabmp,bateria,0,0,300,300,0,0,40,40);
-                        draw_sprite(buffer, bateria, j*40, i*40);
+                        draw_sprite(buffer, piso, j*40, i*40);
+                        draw_sprite(buffer, bateriabmp, j*40, i*40);
                   }
                   else if(mapa[(player.py+44)/40][player.px/40]==2||mapa[player.py/40][player.px/40]==2||mapa[player.py/40][(player.px+40)/40]==2)
                   {
@@ -128,6 +131,7 @@ void pintar_fondo(int mapa[N][M])
             }
       }
 }
+
 void dibujar_personaje()
 {
       stretch_blit(player.personajebmp, player.personaje, player.dir*300,0,300,300,0,0,40,40);
@@ -159,6 +163,7 @@ void dibujar_personaje()
             else{player.encendida=0;}
       }
 }
+
 void mover_personaje()
 {     //MOVIMIENTO DEL PERSONAJE
       if(key[KEY_D]) //movimiento hacia la DERECHA cuando se presiona la tecla D
@@ -258,6 +263,7 @@ void mover_personaje()
             key[KEY_SPACE]=false;
       }
 }
+
 void generarbaterias(int mapa[N][M])
 {
       int i,x,y;
@@ -273,6 +279,7 @@ void generarbaterias(int mapa[N][M])
             mapa[x][y]=2;
       }
 }
+
 void agarrar_bateria(int mapa[N][M])
 {
       mapa[(player.py+44)/40][player.px/40]=0;
