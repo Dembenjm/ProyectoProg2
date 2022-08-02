@@ -1,0 +1,52 @@
+# depslib dependency file v1.0
+1658857293 source:c:\users\administrador\desktop\proyecto\juego\juego\main.c
+	<stdio.h>
+	<string.h>
+	<stdlib.h>
+	<allegro.h>
+	<time.h>
+
+1659407775 source:c:\users\demian\desktop\proyecto\juego\juego\main.c
+	<stdio.h>
+	<string.h>
+	<stdbool.h>
+	<stdlib.h>
+	<allegro.h>
+	<time.h>
+
+1658426524 source:c:\users\demian\desktop\proyecto\juego\main.c
+	<stdio.h>
+	<string.h>
+	<stdlib.h>
+	<allegro.h>
+	<time.h>
+
+1658185817 source:c:\users\demian\desktop\proyecto\juego - copia\main.c
+	<stdio.h>
+	<stdlib.h>
+	<allegro.h>
+	<time.h>
+
+1659392014 source:c:\users\administrador\desktop\proyectoprogramacionestructurada-main\main.c
+	<stdio.h>
+	<string.h>
+	<stdbool.h>
+	<stdlib.h>
+	<allegro.h>
+	<time.h>
+
+1659210138 source:c:\users\demian\desktop\proyecto\juego\juego - copia\main.c
+	<stdio.h>
+	<string.h>
+	<stdlib.h>
+	<allegro.h>
+	<time.h>
+
+1659456104 source:c:\users\demian\desktop\proyecto\juego respaldo\juego\main.c
+	<stdio.h>
+	<string.h>
+	<stdbool.h>
+	<stdlib.h>
+	<allegro.h>
+	<time.h>
+
