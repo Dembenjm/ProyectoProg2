@@ -9,10 +9,10 @@
 #define MAXBATERIAS 5
 void mover_personaje(); //función para mover el personaje
 void cargar_bitmaps();
-void importar_mapa(int mapa[N][M]);
-void pintar_fondo(int mapa[N][M]);
-void generarbaterias(int mapa[N][M]);
-void agarrar_bateria(int mapa[N][M]);
+void importar_mapa();
+void pintar_fondo();
+void generarbaterias();
+void agarrar_bateria();
 void dibujar_personaje();
 BITMAP *buffer; //se declara buffer como tipo bitmap, aquí se almacenarán las imagenes
 BITMAP *fondo; //se declara un bitmap para almacenar el archivo de imagen del personaje
@@ -34,14 +34,25 @@ struct personaje
       BITMAP *personajebmp;
       BITMAP *personaje;
 }player;
+struct enemigos
+{
+      int activado;
+      int px;
+      int py;
+      int dir;
+      int vel_pasos;
+      BITMAP *enemigobmp;
+      BITMAP *enemigo;
+}enemigo;
 int ventana_w=800;
 int ventana_h=600;
 int cont_baterias=0;
 int main()
 {
       player.px=ventana_w/2;
-      player.py=ventana_h/2;
+      player.py=(ventana_h/2)+100;
       player.encendida=0;
+      enemigo.activado=0;
       allegro_init();//macro que inicializa allegro
       install_keyboard();//instala el controlador de interrupciones del teclado allegro, se debe llamar a esta función antes de usar cualquiera de las rutinas de entrada de teclado
       set_color_depth(32);//establece la profundidad de color que se utilizará en las llamadas posteriores, profundidades validas: 8, 15 , 16, 24, 32bits
@@ -53,14 +64,18 @@ int main()
       while (!key[KEY_ESC])//mientras la tecla que se presione sea distinta que esc se mantiene dentro del bucle y por lo tanto el juego se sigue ejecutando
       {
             mover_personaje();
+            mover_enemigo();
             rest(5);
             clear_bitmap(buffer);
             pintar_fondo(mapa);//imprime matriz con objetos del mapa
             dibujar_personaje();
+
             blit(buffer,screen,0,0,0,0,SCREEN_W,SCREEN_H); //el buffer es dibujado en la pantalla
       }
       destroy_bitmap(player.personaje);
       destroy_bitmap(player.personajebmp);
+      destroy_bitmap(enemigo.enemigo);
+      destroy_bitmap(enemigo.enemigobmp);
       destroy_bitmap(buffer);
       destroy_bitmap(pared);
       destroy_bitmap(bateria);
@@ -76,6 +91,8 @@ void cargar_bitmaps()
       buffer=create_bitmap(SCREEN_W,SCREEN_H);//el buffer es creado con el ancho y alto de la pantalla
       player.personajebmp=load_bitmap("personaje.bmp",NULL);
       player.personaje=create_bitmap(40,40);
+      enemigo.enemigobmp=load_bitmap("enemigo.bmp",NULL);
+      enemigo.enemigo=create_bitmap(40,40);
       pared=load_bitmap("pared.bmp",NULL);
       piso=load_bitmap("piso.bmp",NULL);
       bateria=create_bitmap(40,40);
@@ -84,7 +101,7 @@ void cargar_bitmaps()
       luzbmp=load_bitmap("luz.bmp",NULL);
 }
 
-void importar_mapa(int mapa[N][M])
+void importar_mapa()
 {
       int i,j;
       FILE *fdata; //es un tipo de estructura definida como ARCHIVO. Se considera un tipo de dato opaco ya que su implementación está oculta. No sabemos qué constituye el tipo, solo usamos el puntero al tipo y la biblioteca conoce el interior del tipo y puede usar los datos.
@@ -104,7 +121,7 @@ void importar_mapa(int mapa[N][M])
       fclose(fdata);
 }
 
-void pintar_fondo(int mapa[N][M])
+void pintar_fondo()
 {
       int i,j;
       for(i=0;i<N;i++)
@@ -127,6 +144,20 @@ void pintar_fondo(int mapa[N][M])
                   else if(mapa[(player.py+44)/40][player.px/40]==2||mapa[player.py/40][player.px/40]==2||mapa[player.py/40][(player.px+40)/40]==2)
                   {
                         agarrar_bateria(mapa);
+                  }
+                  if(mapa[i][j]==3)
+                  {
+                        draw_sprite(buffer, piso, j*40, i*40);
+                  }
+                  if(mapa[i][j]==4)
+                  {
+                        if(mapa[player.py/40][player.px/40]==3&&enemigo.activado==0)
+                        {
+                              enemigo.activado=1;
+                              enemigo.px=j*40;
+                              enemigo.py=i*40;
+                        }
+                        draw_sprite(buffer, piso, j*40, i*40);
                   }
             }
       }
@@ -161,6 +192,11 @@ void dibujar_personaje()
                   }
             }
             else{player.encendida=0;}
+      }
+      if(enemigo.activado==1)
+      {
+            stretch_blit(enemigo.enemigobmp, enemigo.enemigo, enemigo.dir*300,0,300,300,0,0,40,40);
+            draw_sprite(buffer, enemigo.enemigo,enemigo.px,enemigo.py);
       }
 }
 
@@ -264,10 +300,34 @@ void mover_personaje()
       }
 }
 
-void generarbaterias(int mapa[N][M])
+void mover_enemigo()
+{
+      enemigo.vel_pasos=1;
+      if(enemigo.activado==1)
+      {
+            if(enemigo.px<player.px)
+            {
+                  enemigo.px=enemigo.px+enemigo.vel_pasos;
+            }
+            else if(enemigo.px>player.px)
+            {
+                  enemigo.px=enemigo.px-enemigo.vel_pasos;
+            }
+            else if(enemigo.py<player.py)
+            {
+                  enemigo.py=enemigo.py+enemigo.vel_pasos;
+            }
+            else if(enemigo.py>player.py)
+            {
+                  enemigo.py=enemigo.py-enemigo.vel_pasos;
+            }
+      }
+}
+
+void generarbaterias()
 {
       int i,x,y;
-      for(i=0;i<=MAXBATERIAS;i++)
+      for(i=0;i<MAXBATERIAS;i++)
       {
             x=rand()%N;
             y=rand()%M;
@@ -280,7 +340,7 @@ void generarbaterias(int mapa[N][M])
       }
 }
 
-void agarrar_bateria(int mapa[N][M])
+void agarrar_bateria()
 {
       mapa[(player.py+44)/40][player.px/40]=0;
       mapa[player.py/40][player.px/40]=0;
