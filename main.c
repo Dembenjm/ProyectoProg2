@@ -22,8 +22,6 @@ BITMAP *bateria;
 BITMAP *bateriabmp;
 BITMAP *luz;
 BITMAP *luzbmp;
-int mapa[N][M];
-int tiempo_luz;
 struct personaje
 {
       int encendida;
@@ -44,8 +42,15 @@ struct enemigos
       BITMAP *enemigobmp;
       BITMAP *enemigo;
 }enemigo;
+struct indicador
+{
+      BITMAP *carga;
+      BITMAP *cargabmp;
+}carga;
+int mapa[N][M];
 int ventana_w=800;
 int ventana_h=600;
+int tiempo_luz;
 int cont_baterias=0;
 int main()
 {
@@ -69,7 +74,6 @@ int main()
             clear_bitmap(buffer);
             pintar_fondo(mapa);//imprime matriz con objetos del mapa
             dibujar_personaje();
-
             blit(buffer,screen,0,0,0,0,SCREEN_W,SCREEN_H); //el buffer es dibujado en la pantalla
       }
       destroy_bitmap(player.personaje);
@@ -99,6 +103,8 @@ void cargar_bitmaps()
       bateriabmp=load_bitmap("bateria.bmp",NULL);
       luz=create_bitmap(40,120);
       luzbmp=load_bitmap("luz.bmp",NULL);
+      carga.carga=create_bitmap(120,40);
+      carga.cargabmp=load_bitmap("cargabmp.bmp",NULL);
 }
 
 void importar_mapa()
@@ -160,13 +166,14 @@ void pintar_fondo()
                         draw_sprite(buffer, piso, j*40, i*40);
                   }
             }
+            stretch_blit(carga.cargabmp,carga.carga,120*cont_baterias,0,720,40,0,0,720,40);
+            draw_sprite(buffer,carga.carga,670,10);
       }
 }
 
 void dibujar_personaje()
 {
       stretch_blit(player.personajebmp, player.personaje, player.dir*300,0,300,300,0,0,40,40);
-     //rect(player.personaje, 0, 0, 39, 39,255);
       draw_sprite(buffer, player.personaje,player.px,player.py);
       if(player.encendida==1)
       {
@@ -309,15 +316,15 @@ void mover_enemigo()
             {
                   enemigo.px=enemigo.px+enemigo.vel_pasos;
             }
-            else if(enemigo.px>player.px)
+            if(enemigo.px>player.px)
             {
                   enemigo.px=enemigo.px-enemigo.vel_pasos;
             }
-            else if(enemigo.py<player.py)
+            if(enemigo.py<player.py)
             {
                   enemigo.py=enemigo.py+enemigo.vel_pasos;
             }
-            else if(enemigo.py>player.py)
+            if(enemigo.py>player.py)
             {
                   enemigo.py=enemigo.py-enemigo.vel_pasos;
             }
