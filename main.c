@@ -1,4 +1,4 @@
-//ORDENAR ARCHIVOS
+//ORDENAR ARCHIVOS - LISTO
 //VER QUE VARIABLES SON GLOBALES
 //COMPLETAR MAPAS Y HACER UN MAPA CON LEYENDA
 //DARLE MAS OBSTACULOS O DINAMISMO (PORTALES)
@@ -14,35 +14,6 @@
 #define M 20
 #define L 11
 #define MAXBATERIAS 5
-
-void mover_personaje(); //función para mover el personaje
-void mover_enemigo();
-void cargar_bitmaps();
-void pintar_fondo();
-void dibujar_personaje();
-void indicador_bateria();
-void destruir_bitmaps();
-void cargar_sonidos();
-void agarrar_objeto(int obj);
-void contar_objetos(int obj);
-void leer_archivo(char *nombre_archivo);
-void importar_nivel(int nvl);
-void inicializar_musica(int nvl);
-void efectos_sonido(int n_efx);
-
-
-BITMAP *buffer; //se declara buffer como tipo bitmap, aquí se almacenarán las imagenes
-BITMAP *fondo; //se declara un bitmap para almacenar el archivo de imagen del personaje
-BITMAP *pared;
-BITMAP *piso;
-BITMAP *bateria;
-BITMAP *bateriabmp;
-BITMAP *luz;
-BITMAP *luzbmp;
-BITMAP *llave;
-BITMAP *llavebmp;
-BITMAP *puerta;
-BITMAP *puertabmp;
 
 struct personaje
 {
@@ -66,13 +37,44 @@ struct enemigos
       int vel_pasos;
       BITMAP *enemigobmp;
       BITMAP *enemigo;
-}enemigo[MAX_ENE];
+}enemigo;
 
 struct indicador
 {
       BITMAP *carga;
       BITMAP *cargabmp;
 }carga;
+
+void mover_personaje(); //función para mover el personaje
+void mover_enemigo();
+void cargar_bitmaps();
+void pintar_fondo();
+void dibujar_personaje();
+void indicador_bateria();
+void destruir_bitmaps();
+void cargar_recursos();
+void agarrar_objeto(int obj);
+void contar_objetos(int obj);
+void leer_archivo(char *nombre_archivo);
+void importar_nivel(int nvl);
+void inicializar_musica(int nvl);
+void efectos_sonido(int n_efx);
+
+BITMAP *buffer; //se declara buffer como tipo bitmap, aquí se almacenarán las imagenes
+BITMAP *fondo; //se declara un bitmap para almacenar el archivo de imagen del personaje
+BITMAP *pared;
+BITMAP *piso;
+BITMAP *bateria;
+BITMAP *bateriabmp;
+BITMAP *luz;
+BITMAP *luzbmp;
+BITMAP *llave;
+BITMAP *llavebmp;
+BITMAP *puerta;
+BITMAP *puertabmp;
+MIDI *musica1;
+MIDI *musica2;
+
 //DECLARACIÓN DE VARIABLES
 int mapa[N][M];
 int ventana_w=800;
@@ -104,8 +106,7 @@ int main()
             allegro_message("Error: inicializando sistema de sonido\n%s\n", allegro_error);
             return 1;
       }
-//      MIDI *musica1 = load_midi("recursos/musica/musica1.mid");
-//      MIDI *musica2 = load_midi("recursos/musica/musica2.mid");
+      cargar_recursos();
       //CICLO DEL JUEGO
       while (!key[KEY_ESC])//mientras la tecla que se presione sea distinta que esc se mantiene dentro del bucle y por lo tanto el juego se sigue ejecutando
       {
@@ -128,7 +129,6 @@ int main()
                         {
                               play_midi(musica2,1);
                         }
-                        cargar_bitmaps();
                         importar_nivel(nivel);
                         player.px=pos_inicialx;
                         player.py=pos_inicialy;
@@ -160,24 +160,26 @@ int main()
 }
 END_OF_MAIN(); //allegro requiere que se le indique donde termina el main
 
-void cargar_bitmaps()
+void cargar_recursos()
 {
+      musica1 = load_midi("recursos/musica/musica1.mid");
+      musica2 = load_midi("recursos/musica/musica2.mid");
       buffer=create_bitmap(SCREEN_W,SCREEN_H);//el buffer es creado con el ancho y alto de la pantalla
-      player.personajebmp=load_bitmap("personaje.bmp",NULL);
+      player.personajebmp=load_bitmap("recursos/imagenes/personaje.bmp",NULL);
       player.personaje=create_bitmap(40,40);
-      enemigo.enemigobmp=load_bitmap("enemigo.bmp",NULL);
+      enemigo.enemigobmp=load_bitmap("recursos/imagenes/enemigo.bmp",NULL);
       enemigo.enemigo=create_bitmap(40,40);
-      pared=load_bitmap("pared.bmp",NULL);
-      piso=load_bitmap("piso.bmp",NULL);
-      bateriabmp=load_bitmap("bateria.bmp",NULL);
+      pared=load_bitmap("recursos/imagenes/pared.bmp",NULL);
+      piso=load_bitmap("recursos/imagenes/piso.bmp",NULL);
+      bateriabmp=load_bitmap("recursos/imagenes/bateria.bmp",NULL);
       luz=create_bitmap(40,120);
-      luzbmp=load_bitmap("luz.bmp",NULL);
+      luzbmp=load_bitmap("recursos/imagenes/luz.bmp",NULL);
       carga.carga=create_bitmap(120,40);
-      carga.cargabmp=load_bitmap("cargabmp.bmp",NULL);
+      carga.cargabmp=load_bitmap("recursos/imagenes/cargabmp.bmp",NULL);
       llave=create_bitmap(40,40);
-      llavebmp=load_bitmap("llave.bmp",NULL);
+      llavebmp=load_bitmap("recursos/imagenes/llave.bmp",NULL);
       puerta=create_bitmap(40,40);
-      puertabmp=load_bitmap("puerta.bmp",NULL);
+      puertabmp=load_bitmap("recursos/imagenes/puerta.bmp",NULL);
 }
 
 void importar_nivel(int nvl)
@@ -185,19 +187,19 @@ void importar_nivel(int nvl)
       char *nombre[L];
       if(nvl==1)
       {
-         nombre[L]="nivel1.txt";
+         nombre[L]="niveles/nivel1.txt";
       }
       if(nvl==2)
       {
-         nombre[L]="nivel2.txt";
+         nombre[L]="niveles/nivel2.txt";
       }
       if(nvl==3)
       {
-         nombre[L]="nivel3.txt";
+         nombre[L]="niveles/nivel3.txt";
       }
       if(nvl==4)
       {
-         nombre[L]="nivel4.txt";
+         nombre[L]="niveles/nivel4.txt";
       }
       leer_archivo(nombre[L]);
 }
@@ -456,11 +458,11 @@ void mover_personaje()
 
 void mover_enemigo()
 {
+      int distancia_y=(enemigo.py+40)/40-(player.py-120)/40;
+      int distancia_x=(enemigo.px+40)/40-(player.px-120)/40;
       enemigo.vel_pasos=1;
       if(enemigo.activado==1)
       {
-            int distancia_y=(enemigo.py+40)/40-(player.py-120)/40;
-            int distancia_x=(enemigo.px+40)/40-(player.px-120)/40;
             if(distancia_y>0&&distancia_y<4&&enemigo.px/40==player.px/40&&player.dir==0&&player.encendida==1) {}//DETECTAR LINTERNA HACIA ARRIBA
             else if(distancia_y<=7&&distancia_y>=4&&enemigo.px/40==player.px/40&&player.dir==2&&player.encendida==1){} //DETECTAR LINTERNA HACIA ABAJO
             else if(distancia_x>0&&distancia_x<4&&enemigo.py/40==player.py/40&&player.dir==1&&player.encendida==1){} //DETECTAR LINTERNA HACIA LA IZQUIERDA
@@ -543,32 +545,4 @@ void destruir_bitmaps()
       destroy_bitmap(puerta);
       destroy_bitmap(puertabmp);
 }
-
-////void efectos_sonido(int n_efx)
-//{
-//      SAMPLE *pasos = load_sample("pasos.wav");
-//      SAMPLE *puertag = load_sample("puertag.wav");
-//      SAMPLE *puertac = load_sample("puertac.wav");
-//      SAMPLE *puertaa = load_sample("puertaa.wav");
-//      if(n_efx==1)
-//      {
-//            if(cont_sonido==0)
-//            {
-//                  play_sample(pasos,200,150,900,0);
-//            }
-//
-//      }
-//      else if(n_efx==2)
-//      {
-//            play_sample(puertag,200,150,900,0);
-//      }
-//      else if(n_efx==3)
-//      {
-//            play_sample(puertac,200,150,900,0);
-//      }
-//      else if(n_efx==4)
-//      {
-//            play_sample(puertaa,200,150,900,0);
-//      }
-//}
 
