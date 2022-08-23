@@ -1,3 +1,9 @@
+//ORDENAR ARCHIVOS
+//VER QUE VARIABLES SON GLOBALES
+//COMPLETAR MAPAS Y HACER UN MAPA CON LEYENDA
+//DARLE MAS OBSTACULOS O DINAMISMO (PORTALES)
+//CREAR MENU DEL JUEGO
+
 #include <stdio.h>
 #include<string.h>
 #include<stdbool.h>
@@ -21,7 +27,9 @@ void agarrar_objeto(int obj);
 void contar_objetos(int obj);
 void leer_archivo(char *nombre_archivo);
 void importar_nivel(int nvl);
+void inicializar_musica(int nvl);
 void efectos_sonido(int n_efx);
+
 
 BITMAP *buffer; //se declara buffer como tipo bitmap, aquí se almacenarán las imagenes
 BITMAP *fondo; //se declara un bitmap para almacenar el archivo de imagen del personaje
@@ -58,7 +66,7 @@ struct enemigos
       int vel_pasos;
       BITMAP *enemigobmp;
       BITMAP *enemigo;
-}enemigo;
+}enemigo[MAX_ENE];
 
 struct indicador
 {
@@ -96,23 +104,30 @@ int main()
             allegro_message("Error: inicializando sistema de sonido\n%s\n", allegro_error);
             return 1;
       }
-      MIDI *musica1 = load_midi("musica1.mid");
+//      MIDI *musica1 = load_midi("recursos/musica/musica1.mid");
+//      MIDI *musica2 = load_midi("recursos/musica/musica2.mid");
       //CICLO DEL JUEGO
       while (!key[KEY_ESC])//mientras la tecla que se presione sea distinta que esc se mantiene dentro del bucle y por lo tanto el juego se sigue ejecutando
       {
             if(nivel==0)
             {
-                  printf("Menu");
                   if(key[KEY_J])
                   {
                         nivel=1;
-                        play_midi(musica1,1);
                   }
             }
             else
             {
                   if(mapa_importado == 0)
                   {
+                        if(nivel==1)
+                        {
+                              play_midi(musica1,1);
+                        }
+                        else if(nivel==2)
+                        {
+                              play_midi(musica2,1);
+                        }
                         cargar_bitmaps();
                         importar_nivel(nivel);
                         player.px=pos_inicialx;
@@ -167,16 +182,24 @@ void cargar_bitmaps()
 
 void importar_nivel(int nvl)
 {
-      char *nombre[11];
+      char *nombre[L];
       if(nvl==1)
       {
-         nombre[11]="nivel1.txt";
+         nombre[L]="nivel1.txt";
       }
       if(nvl==2)
       {
-         nombre[11]="nivel2.txt";
+         nombre[L]="nivel2.txt";
       }
-      leer_archivo(nombre[11]);
+      if(nvl==3)
+      {
+         nombre[L]="nivel3.txt";
+      }
+      if(nvl==4)
+      {
+         nombre[L]="nivel4.txt";
+      }
+      leer_archivo(nombre[L]);
 }
 
 void leer_archivo(char *nombre_archivo)
@@ -206,7 +229,7 @@ void leer_archivo(char *nombre_archivo)
 
 void pintar_fondo()
 {
-      int i,j,obj;
+      int i , j, obj;
       for(i=0;i<N;i++)
       {
             for(j=0;j<M;j++)
@@ -358,9 +381,8 @@ void mover_personaje()
       }
       else if(key[KEY_W]) //movimiento hacia ARRIBA cuando se presiona la tecla W
       {
-            efectos_sonido(1);
             player.dir=0;
-            if(mapa[(player.py-4)/40][player.px/40]!=1 && mapa[(player.py-4)/40][(player.px+30)/40]!=1)
+            if(mapa[(player.py-4)/40][(player.px+10)/40]!=1 && mapa[(player.py-4)/40][(player.px+30)/40]!=1)
             {
                   if(mapa[(player.py-4)/40][player.px/40]==6 && mapa[(player.py-4)/40][(player.px+30)/40]==6) //Arreglar
                   {
@@ -379,16 +401,16 @@ void mover_personaje()
       else if(key[KEY_S]) //movimiento hacia ABAJO cuando se presiona la tecla S
       {
             player.dir=2;
-            if(mapa[(player.py+44)/40][(player.px+4)/40]!=1&&mapa[(player.py+44)/40][(player.px+30)/40]!=1)
+            if(mapa[(player.py+44)/40][(player.px+4)/40]!=1 && mapa[(player.py+44)/40][(player.px+30)/40]!=1)
             {
-                  if(mapa[(player.py+44)/40][(player.px+4)/40]==6&&mapa[(player.py+44)/40][(player.px+30)/40]==6)
+                  if(mapa[(player.py+44)/40][(player.px+4)/40]==6 && mapa[(player.py+44)/40][(player.px+30)/40]==6)
                   {
                         if(estado_puerta==1)
                         {
                               player.py=player.py+player.vel_pasos;
                         }
                   }
-                  else if(mapa[(player.py+44)/40][(player.px+4)/40]==7&&mapa[(player.py+44)/40][(player.px+30)/40]==7)
+                  else if(mapa[(player.py+44)/40][(player.px+4)/40]==7 && mapa[(player.py+44)/40][(player.px+30)/40]==7)
                   {
                         if(estado_puerta==1)
                         {
@@ -439,23 +461,10 @@ void mover_enemigo()
       {
             int distancia_y=(enemigo.py+40)/40-(player.py-120)/40;
             int distancia_x=(enemigo.px+40)/40-(player.px-120)/40;
-            if(distancia_y>0&&distancia_y<4&&enemigo.px/40==player.px/40&&player.dir==0&&player.encendida==1) //DETECTAR LINTERNA HACIA ARRIBA
-            {
-                  printf("linterna en enemigo");
-            }
-            else if(distancia_y<=7&&distancia_y>=4&&enemigo.px/40==player.px/40&&player.dir==2&&player.encendida==1) //DETECTAR LINTERNA HACIA ABAJO
-            {
-                  printf("linterna en enemigo");
-            }
-            else if(distancia_x>0&&distancia_x<4&&enemigo.py/40==player.py/40&&player.dir==1&&player.encendida==1) //DETECTAR LINTERNA HACIA LA IZQUIERDA
-            {
-                  printf("linterna en enemigo");
-            }
-            else if(distancia_x<=7&&distancia_x>=4&&enemigo.py/40==player.py/40&&player.dir==3&&player.encendida==1) //DETECTAR LINTERNA HACIA LA DERECHA
-            {
-                  printf("linterna en enemigo");
-                  printf("distancia_x=%d",distancia_x);
-            }
+            if(distancia_y>0&&distancia_y<4&&enemigo.px/40==player.px/40&&player.dir==0&&player.encendida==1) {}//DETECTAR LINTERNA HACIA ARRIBA
+            else if(distancia_y<=7&&distancia_y>=4&&enemigo.px/40==player.px/40&&player.dir==2&&player.encendida==1){} //DETECTAR LINTERNA HACIA ABAJO
+            else if(distancia_x>0&&distancia_x<4&&enemigo.py/40==player.py/40&&player.dir==1&&player.encendida==1){} //DETECTAR LINTERNA HACIA LA IZQUIERDA
+            else if(distancia_x<=7&&distancia_x>=4&&enemigo.py/40==player.py/40&&player.dir==3&&player.encendida==1){} //DETECTAR LINTERNA HACIA LA DERECHA
             else
             {
                   if(enemigo.px<player.px)
@@ -519,15 +528,6 @@ void indicador_bateria()
       draw_sprite(buffer,carga.carga,670,10);
 }
 
-void efectos_sonido(int n_efx)
-{
-      SAMPLE *pasos = load_sample("pasos.wav");
-      if(n_efx==1)
-      {
-            play_sample(pasos,200,150,900,0);
-      }
-}
-
 void destruir_bitmaps()
 {
       destroy_bitmap(player.personaje);
@@ -543,4 +543,32 @@ void destruir_bitmaps()
       destroy_bitmap(puerta);
       destroy_bitmap(puertabmp);
 }
+
+////void efectos_sonido(int n_efx)
+//{
+//      SAMPLE *pasos = load_sample("pasos.wav");
+//      SAMPLE *puertag = load_sample("puertag.wav");
+//      SAMPLE *puertac = load_sample("puertac.wav");
+//      SAMPLE *puertaa = load_sample("puertaa.wav");
+//      if(n_efx==1)
+//      {
+//            if(cont_sonido==0)
+//            {
+//                  play_sample(pasos,200,150,900,0);
+//            }
+//
+//      }
+//      else if(n_efx==2)
+//      {
+//            play_sample(puertag,200,150,900,0);
+//      }
+//      else if(n_efx==3)
+//      {
+//            play_sample(puertac,200,150,900,0);
+//      }
+//      else if(n_efx==4)
+//      {
+//            play_sample(puertaa,200,150,900,0);
+//      }
+//}
 
