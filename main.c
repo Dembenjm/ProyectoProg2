@@ -56,6 +56,8 @@ int inicializar_allegro(int ventana_w, int ventana_h);
 int detectar_baterias(int cont_baterias);
 int usar_linterna(int cont_baterias);
 int detectar_puerta(int estado_puerta);
+int detectar_distanciax(int i);
+//int detectar_distanciay(int distancia_y, int distancia_x);
 void leer_archivo(char *nombre_archivo);
 void importar_nivel(int nvl);
 void inicializar_musica(int nvl);
@@ -78,7 +80,7 @@ void contar_llave();
 void detectar_llaves();
 void colision_enemigo0();
 
-BITMAP *buffer; //se declara buffer como tipo bitmap, aquí se almacenarán las imagenes
+BITMAP *buffer; //se declara buffer como tipo bitmap, aquï¿½ se almacenarï¿½n las imagenes
 BITMAP *fondo; //se declara un bitmap para almacenar el archivo de imagen del personaje
 BITMAP *pared;
 BITMAP *piso;
@@ -93,7 +95,7 @@ BITMAP *puertabmp;
 MIDI *musica1;
 MIDI *musica2;
 
-//DECLARACIÓN DE VARIABLES
+//DECLARACIï¿½N DE VARIABLES
 int mapa[N][M];
 int tiempo_luz;
 
@@ -191,9 +193,9 @@ END_OF_MAIN(); //allegro requiere que se le indique donde termina el main
 int inicializar_allegro(int ventana_w, int ventana_h)
 {
       allegro_init();//macro que inicializa allegro
-      install_keyboard();//instala el controlador de interrupciones del teclado allegro, se debe llamar a esta función antes de usar cualquiera de las rutinas de entrada de teclado
-      set_color_depth(32);//establece la profundidad de color que se utilizará en las llamadas posteriores, profundidades validas: 8, 15 , 16, 24, 32bits
-      set_gfx_mode(GFX_AUTODETECT_WINDOWED, ventana_w, ventana_h, 0, 0);//cambia al modo de graficos, se especifica la resolucion de pantalla que se desea y su tamaño minimo
+      install_keyboard();//instala el controlador de interrupciones del teclado allegro, se debe llamar a esta funciï¿½n antes de usar cualquiera de las rutinas de entrada de teclado
+      set_color_depth(32);//establece la profundidad de color que se utilizarï¿½ en las llamadas posteriores, profundidades validas: 8, 15 , 16, 24, 32bits
+      set_gfx_mode(GFX_AUTODETECT_WINDOWED, ventana_w, ventana_h, 0, 0);//cambia al modo de graficos, se especifica la resolucion de pantalla que se desea y su tamaï¿½o minimo
       if (install_sound(DIGI_AUTODETECT, MIDI_AUTODETECT, NULL) != 0){
             allegro_message("Error: inicializando sistema de sonido\n%s\n", allegro_error);
             return -1;
@@ -272,7 +274,7 @@ void importar_nivel(int nvl)
 void leer_archivo(char *nombre_archivo)
 {
       int i,j;
-      FILE *fdata; //es un tipo de estructura definida como ARCHIVO. Se considera un tipo de dato opaco ya que su implementación está oculta. No sabemos qué constituye el tipo, solo usamos el puntero al tipo y la biblioteca conoce el interior del tipo y puede usar los datos.
+      FILE *fdata; //es un tipo de estructura definida como ARCHIVO. Se considera un tipo de dato opaco ya que su implementaciï¿½n estï¿½ oculta. No sabemos quï¿½ constituye el tipo, solo usamos el puntero al tipo y la biblioteca conoce el interior del tipo y puede usar los datos.
       fdata=fopen(nombre_archivo,"r"); //abre el nombre de archivo al que apunta, por nombre de archivo usando el modo dado "r" Abre un archivo para lectura
       if(fdata==NULL)
       {
@@ -422,7 +424,7 @@ void mover_personaje(int estado_puerta)
       if(key[KEY_D]) //movimiento hacia la DERECHA cuando se presiona la tecla D
       {
             player.dir=3;
-            if(mapa[(player.py+8)/40][(player.px+44)/40] != 1 && mapa[(player.py+32)/40][(player.px+44)/40] != 1) //si la posición del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
+            if(mapa[(player.py+8)/40][(player.px+44)/40] != 1 && mapa[(player.py+32)/40][(player.px+44)/40] != 1) //si la posiciï¿½n del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
             {
                   player.px=player.px+player.vel_pasos;
             }
@@ -561,20 +563,24 @@ int usar_linterna(int cont_baterias)
 
 void mover_enemigo()
 {
-      int distancia_y, distancia_x, i;
+      int i, detectar_luz;
       for(i=0; i<MAXENEMIGOS; i++)
       {
-            distancia_y=(enemigos[i].py+40)/40-(player.py-120)/40;
-            distancia_x=(enemigos[i].px+40)/40-(player.px-120)/40;
 
+          //  distancia_y = detectar_distanciay(distancia_y, distancia_x);
             enemigos[i].vel_pasos=1;
 
             if(enemigos[i].activado==1)
             {
-                  if(distancia_y>0&&distancia_y<4&&enemigos[i].px/40==player.px/40&&player.dir==0&&player.encendida==1) {}//DETECTAR LINTERNA HACIA ARRIBA
-                  else if(distancia_y<=7&&distancia_y>=4&&enemigos[i].px/40==player.px/40&&player.dir==2&&player.encendida==1){} //DETECTAR LINTERNA HACIA ABAJO
-                  else if(distancia_x>0&&distancia_x<4&&enemigos[i].py/40==player.py/40&&player.dir==1&&player.encendida==1){} //DETECTAR LINTERNA HACIA LA IZQUIERDA
-                  else if(distancia_x<=7&&distancia_x>=4&&enemigos[i].py/40==player.py/40&&player.dir==3&&player.encendida==1){} //DETECTAR LINTERNA HACIA LA DERECHA
+                  detectar_luz = detectar_distanciax(i);
+                  if(player.encendida==1 && detectar_luz==1)
+                  {
+                        printf("detectar_luz=%d",detectar_luz);
+                        if(detectar_luz == 0)
+                        {
+                              enemigos[i].colision=1;
+                        }
+                  }
                   else
                   {
                         if(enemigos[i].tipo == 0)
@@ -694,6 +700,66 @@ int detectar_puerta(int estado_puerta)
       }
       return estado_puerta;
 }
+
+int detectar_distanciax(int i)
+{
+      int distancia_x;
+      distancia_x=(enemigos[i].px+40)/40-(player.px-120)/40;
+      if(enemigos[i].py/40==player.py/40)
+      {
+            if(distancia_x>0 && distancia_x<4 && player.dir==1)
+            {
+                  return 1;
+            } //DETECTAR LINTERNA HACIA LA IZQUIERDA
+            else if(distancia_x<=7 && distancia_x>=4 && player.dir==3)
+            {
+                  return 1;
+            } //DETECTAR LINTERNA HACIA LA DERECHA
+            else
+            {
+                  return 0;
+            }
+      }
+      // for(i=0; i<MAXENEMIGOS; i++)
+      // {
+      //       distancia_x=(enemigos[i].px+40)/40-(player.px-120)/40;
+      //       if(enemigos[i].py/40==player.py/40)
+      //       {
+      //             if(distancia_x>0 && distancia_x<4 && player.dir==1)
+      //             {
+      //                   return 1;
+      //             } //DETECTAR LINTERNA HACIA LA IZQUIERDA
+      //             else if(distancia_x<=7 && distancia_x>=4 && player.dir==3)
+      //             {
+      //                   return 1;
+      //             } //DETECTAR LINTERNA HACIA LA DERECHA
+      //             else
+      //             {
+      //                   return 0;
+      //             }
+      //       }
+      // }
+}
+
+/*int detectar_distanciay(int distancia_y, int distancia_x)
+{
+      int i, j;
+      for(i=0;i<N;i++)
+      {
+            for(j=0;j<M;j++)
+            {
+                  if(distancia_y>0&&distancia_y<4&&enemigos[i].px/40==player.px/40&&player.dir==0)
+                  {
+                        printf("linterna detectada abajo\n");
+                  }//DETECTAR LINTERNA HACIA ARRIBA
+                  else if(distancia_y<=7&&distancia_y>=4&&enemigos[i].px/40==player.px/40&&player.dir==2)
+                  {
+                        printf("linterna detectada abajo\n");
+                  } //DETECTAR LINTERNA HACIA ABAJO
+            }
+      }
+      return distancia_y;
+}*/
 
 void detectar_llaves()
 {
