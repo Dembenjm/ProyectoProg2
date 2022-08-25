@@ -15,4 +15,13 @@
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
 
 
+0 = piso
+1 = pared
+2 = bateria
+3 = piso detector
+4 = enemigo
+5 = llave
+6 = puerta
+7 = puerta cerrada (colisión)
+8 = posición inicial personaje
 

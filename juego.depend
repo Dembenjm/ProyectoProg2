@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1661012188 source:c:\users\demian\desktop\proyecto\gitproyectoprog2\main.c
+1661386060 source:c:\users\demian\desktop\proyecto\gitproyectoprog2\main.c
 	<stdio.h>
 	<string.h>
 	<stdbool.h>
@@ -23,7 +23,55 @@
 	<allegro.h>
 	<time.h>
 
-1661272042 source:c:\users\administrador\desktop\proyectoprog2\main.c
+1661276146 source:c:\users\administrador\desktop\proyectoprog2\main.c
+	<stdio.h>
+	<string.h>
+	<stdbool.h>
+	<stdlib.h>
+	<allegro.h>
+	<time.h>
+
+1661307289 source:c:\users\administrador\desktop\proyectoprog2 - profe tito\main.c
+	<stdio.h>
+	<string.h>
+	<stdbool.h>
+	<stdlib.h>
+	<allegro.h>
+	<time.h>
+
+1661358087 source:c:\users\demian\desktop\proyectoprog2 - profe tito modificado\main.c
+	<stdio.h>
+	<string.h>
+	<stdbool.h>
+	<stdlib.h>
+	<allegro.h>
+	<time.h>
+
+1661370459 source:c:\users\demian\desktop\proyectoprog2 - profe tito modificado2\main.c
+	<stdio.h>
+	<string.h>
+	<stdbool.h>
+	<stdlib.h>
+	<allegro.h>
+	<time.h>
+
+1661370459 source:c:\users\demian\desktop\proyectoprog2 - profe tito modificado3\main.c
+	<stdio.h>
+	<string.h>
+	<stdbool.h>
+	<stdlib.h>
+	<allegro.h>
+	<time.h>
+
+1661373191 source:c:\users\demian\desktop\proyectoprog2 - profe tito modificado4\main.c
+	<stdio.h>
+	<string.h>
+	<stdbool.h>
+	<stdlib.h>
+	<allegro.h>
+	<time.h>
+
+1661386060 source:c:\users\demian\desktop\proyectoprog2 - profe tito modificado5\main.c
 	<stdio.h>
 	<string.h>
 	<stdbool.h>

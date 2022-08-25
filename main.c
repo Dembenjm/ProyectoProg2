@@ -1,4 +1,8 @@
 //ORDENAR ARCHIVOS - LISTO
+//DEFINIR TIPOS DE ENEMIGOS QUE TENGAN DISTINTO COMPORTAMIENTO
+//TIPO 0: Se mueve solo de izquierda a derecha
+//TIPO 1: Se mueve para todas las direcciones hacia el enemigo
+//TIPO 2; Se mueve para todas las direcciones (sin colisiones)
 //VER QUE VARIABLES SON GLOBALES
 //COMPLETAR MAPAS Y HACER UN MAPA CON LEYENDA
 //DARLE MAS OBSTACULOS O DINAMISMO (PORTALES)
@@ -14,6 +18,7 @@
 #define M 20
 #define L 11
 #define MAXBATERIAS 5
+#define MAXENEMIGOS 4
 
 struct personaje
 {
@@ -28,16 +33,18 @@ struct personaje
       BITMAP *personaje;
 }player;
 
-struct enemigos
+struct enemigo
 {
+      int tipo;
       int activado;
       int px;
       int py;
       int dir;
       int vel_pasos;
+      int colision;
       BITMAP *enemigobmp;
       BITMAP *enemigo;
-}enemigo;
+}enemigos[MAXENEMIGOS]; //tipo de enemigo agregar
 
 struct indicador
 {
@@ -45,20 +52,31 @@ struct indicador
       BITMAP *cargabmp;
 }carga;
 
-void mover_personaje(); //función para mover el personaje
-void mover_enemigo();
-void cargar_bitmaps();
-void pintar_fondo();
-void dibujar_personaje();
-void indicador_bateria();
-void destruir_bitmaps();
-void cargar_recursos();
-void agarrar_objeto(int obj);
-void contar_objetos(int obj);
+int inicializar_allegro(int ventana_w, int ventana_h);
+int detectar_baterias(int cont_baterias);
+int usar_linterna(int cont_baterias);
+int detectar_puerta(int estado_puerta);
 void leer_archivo(char *nombre_archivo);
 void importar_nivel(int nvl);
 void inicializar_musica(int nvl);
 void efectos_sonido(int n_efx);
+void agarrar_objeto(int obj);
+void mover_personaje();
+void tipos_enemigos();
+void mover_enemigo();
+void cargar_bitmaps();
+void pintar_fondo();
+void dibujar_personaje();
+void dibujar_enemigo();
+void indicador_bateria();
+void destruir_bitmaps();
+void crear_bitmaps();
+void cargar_imagenes();
+void cargar_musica();
+void pos_inicialplayer();
+void contar_llave();
+void detectar_llaves();
+void colision_enemigo0();
 
 BITMAP *buffer; //se declara buffer como tipo bitmap, aquí se almacenarán las imagenes
 BITMAP *fondo; //se declara un bitmap para almacenar el archivo de imagen del personaje
@@ -77,36 +95,29 @@ MIDI *musica2;
 
 //DECLARACIÓN DE VARIABLES
 int mapa[N][M];
-int ventana_w=800;
-int ventana_h=600;
 int tiempo_luz;
-int cont_baterias=0;
-int estado_puerta=0;
-int detector_linterna=0;
-int pos_inicialx=0;
-int pos_inicialy=0;
-int nivel;
-int mapa_importado=0;
 
 int main()
 {
+      //DECLARACION DE VARIABLES LOCALES MAIN
+      int cont=0;
+      int ventana_w=800; //LOCAL
+      int ventana_h=600; //LOCAL
+      int cont_baterias=0; //LOCAL
+      int estado_puerta=0; //LOCAL
+      int mapa_importado=0; //LOCAL
+      int nivel=0;
+
       //INICIALIZACION DE VARIABLES
       player.vida=1;
       player.llave=0;
       player.encendida=0;
-      enemigo.activado=0;
-      estado_puerta=0;
-      detector_linterna=0;
-      nivel=0;
-      allegro_init();//macro que inicializa allegro
-      install_keyboard();//instala el controlador de interrupciones del teclado allegro, se debe llamar a esta función antes de usar cualquiera de las rutinas de entrada de teclado
-      set_color_depth(32);//establece la profundidad de color que se utilizará en las llamadas posteriores, profundidades validas: 8, 15 , 16, 24, 32bits
-      set_gfx_mode(GFX_AUTODETECT_WINDOWED, ventana_w, ventana_h, 0, 0);//cambia al modo de graficos, se especifica la resolucion de pantalla que se desea y su tamaño minimo
-      if (install_sound(DIGI_AUTODETECT, MIDI_AUTODETECT, NULL) != 0){
-            allegro_message("Error: inicializando sistema de sonido\n%s\n", allegro_error);
-            return 1;
-      }
-      cargar_recursos();
+  //    enemigo.activado=0;  //ver inicializar despues
+      inicializar_allegro(ventana_w, ventana_h);
+      crear_bitmaps();
+      tipos_enemigos(); //OBSERVAR
+      cargar_imagenes();
+      cargar_musica();
       //CICLO DEL JUEGO
       while (!key[KEY_ESC])//mientras la tecla que se presione sea distinta que esc se mantiene dentro del bucle y por lo tanto el juego se sigue ejecutando
       {
@@ -129,57 +140,111 @@ int main()
                         {
                               play_midi(musica2,1);
                         }
+
                         importar_nivel(nivel);
-                        player.px=pos_inicialx;
-                        player.py=pos_inicialy;
+                        pos_inicialplayer();
+                        colision_enemigo0();
                         mapa_importado=1;
                   }
                   else
                   {
-                        pintar_fondo();
+                        pintar_fondo(estado_puerta);
                         dibujar_personaje();
                         mover_personaje();
-                        mover_enemigo();
+                        detectar_llaves();
+                        estado_puerta = detectar_puerta(estado_puerta);
+                        dibujar_enemigo();
+                        cont_baterias = detectar_baterias(cont_baterias);
+                        if(key[KEY_SPACE] && cont_baterias>0 && player.encendida==0)
+                        {
+                              cont_baterias = usar_linterna(cont_baterias);
+                        }
+
                         indicador_bateria();
+
+                        if(cont%2==0)
+                        {
+                              mover_enemigo();
+                        }
+
                         blit(buffer,screen,0,0,0,0,SCREEN_W,SCREEN_H); //el buffer es dibujado en la pantalla
                         clear_bitmap(buffer);
                         rest(5);
+
                         if(mapa[(player.py+40)/40][player.px/40]==6 && estado_puerta==1)
                         {
                               nivel++;
                               mapa_importado=0;
-                              enemigo.activado=0;
+                             // enemigo.activado=0;
                               player.llave=0;
                               estado_puerta=0;
                         }
                   }
             }
+            cont++;
       }
       destruir_bitmaps();
       return 0;
 }
 END_OF_MAIN(); //allegro requiere que se le indique donde termina el main
 
-void cargar_recursos()
+int inicializar_allegro(int ventana_w, int ventana_h)
 {
-      musica1 = load_midi("recursos/musica/musica1.mid");
-      musica2 = load_midi("recursos/musica/musica2.mid");
-      buffer=create_bitmap(SCREEN_W,SCREEN_H);//el buffer es creado con el ancho y alto de la pantalla
-      player.personajebmp=load_bitmap("recursos/imagenes/personaje.bmp",NULL);
-      player.personaje=create_bitmap(40,40);
-      enemigo.enemigobmp=load_bitmap("recursos/imagenes/enemigo.bmp",NULL);
-      enemigo.enemigo=create_bitmap(40,40);
+      allegro_init();//macro que inicializa allegro
+      install_keyboard();//instala el controlador de interrupciones del teclado allegro, se debe llamar a esta función antes de usar cualquiera de las rutinas de entrada de teclado
+      set_color_depth(32);//establece la profundidad de color que se utilizará en las llamadas posteriores, profundidades validas: 8, 15 , 16, 24, 32bits
+      set_gfx_mode(GFX_AUTODETECT_WINDOWED, ventana_w, ventana_h, 0, 0);//cambia al modo de graficos, se especifica la resolucion de pantalla que se desea y su tamaño minimo
+      if (install_sound(DIGI_AUTODETECT, MIDI_AUTODETECT, NULL) != 0){
+            allegro_message("Error: inicializando sistema de sonido\n%s\n", allegro_error);
+            return -1;
+      }
+      return 0;
+}
+
+void cargar_imagenes()
+{
+      int i;
       pared=load_bitmap("recursos/imagenes/pared.bmp",NULL);
       piso=load_bitmap("recursos/imagenes/piso.bmp",NULL);
       bateriabmp=load_bitmap("recursos/imagenes/bateria.bmp",NULL);
-      luz=create_bitmap(40,120);
+      player.personajebmp=load_bitmap("recursos/imagenes/personaje.bmp",NULL);
       luzbmp=load_bitmap("recursos/imagenes/luz.bmp",NULL);
-      carga.carga=create_bitmap(120,40);
       carga.cargabmp=load_bitmap("recursos/imagenes/cargabmp.bmp",NULL);
-      llave=create_bitmap(40,40);
       llavebmp=load_bitmap("recursos/imagenes/llave.bmp",NULL);
-      puerta=create_bitmap(40,40);
       puertabmp=load_bitmap("recursos/imagenes/puerta.bmp",NULL);
+      for(i=0;i<MAXENEMIGOS;i++)
+      {
+            if(enemigos[i].tipo == 0)
+            {
+                  enemigos[i].enemigobmp=load_bitmap("recursos/imagenes/enemigo0.bmp",NULL); //arreglar
+            }
+
+            else
+            {
+                  enemigos[i].enemigobmp=load_bitmap("recursos/imagenes/enemigo1.bmp",NULL); //arreglar
+            }
+      }
+}
+
+void cargar_musica()
+{
+      musica1 = load_midi("recursos/musica/musica1.mid");
+      musica2 = load_midi("recursos/musica/musica2.mid");
+}
+
+void crear_bitmaps()
+{
+      int i;
+      buffer=create_bitmap(SCREEN_W,SCREEN_H);//el buffer es creado con el ancho y alto de la pantalla
+      player.personaje=create_bitmap(40,40);
+      luz=create_bitmap(40,120);
+      carga.carga=create_bitmap(120,40);
+      llave=create_bitmap(40,40);
+      puerta=create_bitmap(40,40);
+      for(i=0;i<MAXENEMIGOS;i++)
+      {
+            enemigos[i].enemigo=create_bitmap(40,40);
+      }
 }
 
 void importar_nivel(int nvl)
@@ -219,19 +284,14 @@ void leer_archivo(char *nombre_archivo)
             for(j=0;j<M;j++)
             {
                   fscanf(fdata,"%d", &mapa[i][j]);
-                  if(mapa[i][j]==8)//COORDENADAS DE INICIO PERSONAJE EN MAPA
-                  {
-                        pos_inicialx=j*40;
-                        pos_inicialy=i*40;
-                  }
             }
       }
       fclose(fdata);
 }
 
-void pintar_fondo()
+void pintar_fondo(int estado_puerta)
 {
-      int i , j, obj;
+      int i , j, cont_enemigo=0;
       for(i=0;i<N;i++)
       {
             for(j=0;j<M;j++)
@@ -249,22 +309,20 @@ void pintar_fondo()
                         draw_sprite(buffer, piso, j*40, i*40);
                         draw_sprite(buffer, bateriabmp, j*40, i*40);
                   }
-                  else if(mapa[(player.py+40)/40][player.px/40]==2||mapa[player.py/40][(player.px+40)/40]==2||mapa[player.py/40][(player.px-4)/40]==2||mapa[(player.py-4)/40][player.px/40]==2)
-                  {
-                        obj=2;
-                        agarrar_objeto(obj);
-                  }
+
                   if(mapa[i][j]==3)//PISO DETECTOR
                   {
                         draw_sprite(buffer, piso, j*40, i*40);
                   }
                   if(mapa[i][j]==4)//ENEMIGO
-                  {     //ACTIVAR ENEMIGO EN LAS COORDENADAS ACTUALES
-                        if(mapa[player.py/40][player.px/40]==3&&enemigo.activado==0)
+                  {
+                        if(cont_enemigo<MAXENEMIGOS)
                         {
-                              enemigo.activado=1;
-                              enemigo.px=j*40;
-                              enemigo.py=i*40;
+                              enemigos[cont_enemigo].activado=1;
+                              enemigos[cont_enemigo].px=j*40;
+                              enemigos[cont_enemigo].py=i*40;
+                              mapa[i][j]=0;
+                              cont_enemigo++;
                         }
                         draw_sprite(buffer, piso, j*40, i*40);
                   }
@@ -274,19 +332,10 @@ void pintar_fondo()
                         stretch_blit(llavebmp,llave,0,0,300,300,0,0,40,40);
                         draw_sprite(buffer, llave, j*40, i*40);
                   }
-                  else if(mapa[(player.py+40)/40][player.px/40]==5||mapa[player.py/40][(player.px+40)/40]==5||mapa[player.py/40][(player.px-4)/40]==5||mapa[(player.py-4)/40][player.px/40]==5)
-                  {
-                        obj=5;
-                        agarrar_objeto(obj);
-                  }
+
                   if(mapa[i][j]==6)//PUERTA
                   {
                         draw_sprite(buffer, piso, j*40, i*40);
-                        if(mapa[(player.py-4)/40][player.px/40]==6 && player.llave==1)//ABRE PUERTA
-                        {
-                              printf("estado_puerta=%d",estado_puerta);
-                              estado_puerta=1;
-                        }
                         if(estado_puerta==0)//CERRADA
                         {
                               stretch_blit(puertabmp,puerta,0,0,40,40,0,0,40,40);
@@ -296,7 +345,6 @@ void pintar_fondo()
                         {
                               stretch_blit(puertabmp,puerta,40,0,40,40,0,0,40,40);
                               draw_sprite(buffer,puerta,j*40,i*40);
-                              player.llave=0;
                         }
                   }
                   if(mapa[i][j]==7)//PUERTA CERRADA CON COLISION
@@ -307,6 +355,21 @@ void pintar_fondo()
                   if(mapa[i][j]==8)//POSICION INICIAL PERSONAJE
                   {
                         draw_sprite(buffer, piso, j*40, i*40);
+                  }
+            }
+      }
+}
+
+void pos_inicialplayer()
+{
+      int i, j;
+      for(i=0;i<N;i++)
+      {     for(j=0;j<M;j++)
+            {
+                  if(mapa[i][j]==8)
+                  {
+                        player.py = i*40;
+                        player.px = j*40;
                   }
             }
       }
@@ -344,16 +407,10 @@ void dibujar_personaje()
                   else{player.encendida=0;}
             }
       }
-      else{}
-      if(enemigo.activado==1)
-      {
-            stretch_blit(enemigo.enemigobmp, enemigo.enemigo, enemigo.dir*300,0,300,300,0,0,40,40);
-            draw_sprite(buffer, enemigo.enemigo,enemigo.px,enemigo.py);
-      }
 }
 
-void mover_personaje()
-{     //MOVIMIENTO DEL PERSONAJE
+void mover_personaje(int estado_puerta)
+{
       if(key[KEY_LSHIFT])
       {
             player.vel_pasos=4;
@@ -444,52 +501,139 @@ void mover_personaje()
       {
             player.dir=2;
       }
-      //USAR LINTERNA
-      if(key[KEY_SPACE] && cont_baterias>0 && player.encendida==0)
+}
+
+void tipos_enemigos()
+{
+      int i;
+      srand(time(NULL));
+      for(i=0; i<MAXENEMIGOS; i++)
       {
-            player.encendida=1;
-            tiempo_luz=150;
-            set_keyboard_rate(0,0);
-            cont_baterias=cont_baterias-1;
-            printf("cont_baterias=%d\n",cont_baterias);
-            key[KEY_SPACE]=false;
+            enemigos[i].tipo = rand() % 2;
       }
+}
+
+void colision_enemigo0()
+{
+      int i;
+      srand(time(NULL));
+      for(i=0; i<MAXENEMIGOS; i++)
+      {
+            if(enemigos[i].tipo==0)
+            {
+                  enemigos[i].colision=rand()%2;
+            }
+      }
+}
+
+void dibujar_enemigo()
+{
+      int i;
+      for(i=0; i<MAXENEMIGOS; i++)
+      {
+            if(enemigos[i].activado==1)
+            {
+                  if(enemigos[i].tipo == 0)
+                  {
+                        stretch_blit(enemigos[i].enemigobmp, enemigos[i].enemigo, enemigos[i].dir*300,0,300,300,0,0,40,40);
+                        draw_sprite(buffer, enemigos[i].enemigo,enemigos[i].px,enemigos[i].py);
+                  }
+                  else
+                  {
+                        stretch_blit(enemigos[i].enemigobmp, enemigos[i].enemigo, enemigos[i].dir*300,0,300,300,0,0,40,40);
+                        draw_sprite(buffer, enemigos[i].enemigo,enemigos[i].px,enemigos[i].py);
+                  }
+
+            }
+      }
+}
+
+int usar_linterna(int cont_baterias)
+{
+      player.encendida=1;
+      tiempo_luz=150;
+      set_keyboard_rate(0,0);
+      cont_baterias=cont_baterias-1;
+      printf("cont_baterias=%d\n",cont_baterias);
+      key[KEY_SPACE]=false;
+      return cont_baterias;
 }
 
 void mover_enemigo()
 {
-      int distancia_y=(enemigo.py+40)/40-(player.py-120)/40;
-      int distancia_x=(enemigo.px+40)/40-(player.px-120)/40;
-      enemigo.vel_pasos=1;
-      if(enemigo.activado==1)
+      int distancia_y, distancia_x, i;
+      for(i=0; i<MAXENEMIGOS; i++)
       {
-            if(distancia_y>0&&distancia_y<4&&enemigo.px/40==player.px/40&&player.dir==0&&player.encendida==1) {}//DETECTAR LINTERNA HACIA ARRIBA
-            else if(distancia_y<=7&&distancia_y>=4&&enemigo.px/40==player.px/40&&player.dir==2&&player.encendida==1){} //DETECTAR LINTERNA HACIA ABAJO
-            else if(distancia_x>0&&distancia_x<4&&enemigo.py/40==player.py/40&&player.dir==1&&player.encendida==1){} //DETECTAR LINTERNA HACIA LA IZQUIERDA
-            else if(distancia_x<=7&&distancia_x>=4&&enemigo.py/40==player.py/40&&player.dir==3&&player.encendida==1){} //DETECTAR LINTERNA HACIA LA DERECHA
-            else
+            distancia_y=(enemigos[i].py+40)/40-(player.py-120)/40;
+            distancia_x=(enemigos[i].px+40)/40-(player.px-120)/40;
+
+            enemigos[i].vel_pasos=1;
+
+            if(enemigos[i].activado==1)
             {
-                  if(enemigo.px<player.px)
+                  if(distancia_y>0&&distancia_y<4&&enemigos[i].px/40==player.px/40&&player.dir==0&&player.encendida==1) {}//DETECTAR LINTERNA HACIA ARRIBA
+                  else if(distancia_y<=7&&distancia_y>=4&&enemigos[i].px/40==player.px/40&&player.dir==2&&player.encendida==1){} //DETECTAR LINTERNA HACIA ABAJO
+                  else if(distancia_x>0&&distancia_x<4&&enemigos[i].py/40==player.py/40&&player.dir==1&&player.encendida==1){} //DETECTAR LINTERNA HACIA LA IZQUIERDA
+                  else if(distancia_x<=7&&distancia_x>=4&&enemigos[i].py/40==player.py/40&&player.dir==3&&player.encendida==1){} //DETECTAR LINTERNA HACIA LA DERECHA
+                  else
                   {
-                        enemigo.px=enemigo.px+enemigo.vel_pasos;
-                  }
-                  if(enemigo.px>player.px)
-                  {
-                        enemigo.px=enemigo.px-enemigo.vel_pasos;
-                  }
-                  if(enemigo.py<player.py)
-                  {
-                        enemigo.py=enemigo.py+enemigo.vel_pasos;
-                  }
-                  if(enemigo.py>player.py)
-                  {
-                        enemigo.py=enemigo.py-enemigo.vel_pasos;
+                        if(enemigos[i].tipo == 0)
+                        {
+                              if(enemigos[i].colision==0)
+                              {
+                                    if(mapa[(enemigos[i].py)/40][(enemigos[i].px+44)/40] != 1)
+                                    {
+                                          enemigos[i].px=enemigos[i].px+enemigos[i].vel_pasos;
+                                    }
+                                    else if(mapa[(enemigos[i].py)/40][(enemigos[i].px+44)/40] == 1)
+                                    {
+                                          enemigos[i].colision=1;
+                                    }
+                              }
+                              else
+                              {
+                                    if(mapa[enemigos[i].py/40][(enemigos[i].px-4)/40] != 1)
+                                    {
+                                          enemigos[i].px=enemigos[i].px-enemigos[i].vel_pasos;
+                                    }
+                                    else if(mapa[enemigos[i].py/40][(enemigos[i].px-4)/40] == 1)
+                                    {
+                                          enemigos[i].colision=0;
+                                    }
+                              }
+
+
+//                              if(enemigos[i].px>player.px)
+//                              {
+//                                    enemigos[i].px=enemigos[i].px-enemigos[i].vel_pasos;
+//                              }
+                        }
+                        else if(enemigos[i].tipo == 1)
+                        {
+                              if(enemigos[i].px<player.px)
+                              {
+                                    enemigos[i].px=enemigos[i].px+enemigos[i].vel_pasos;
+                              }
+                              if(enemigos[i].px>player.px)
+                              {
+                                    enemigos[i].px=enemigos[i].px-enemigos[i].vel_pasos;
+                              }
+                              if(enemigos[i].py<player.py)
+                              {
+                                    enemigos[i].py=enemigos[i].py+enemigos[i].vel_pasos;
+                              }
+                              if(enemigos[i].py>player.py)
+                              {
+                                    enemigos[i].py=enemigos[i].py-enemigos[i].vel_pasos;
+                              }
+                        }
+                        else{}
                   }
             }
       }
 }
 
-void agarrar_objeto(int obj)
+void agarrar_objeto(int obj) //elemento de la matriz se transforma a 0
 {
       if(mapa[(player.py+40)/40][player.px/40]==obj)
       {
@@ -507,24 +651,71 @@ void agarrar_objeto(int obj)
       {
             mapa[(player.py-4)/40][player.px/40]=0;
       }
-      contar_objetos(obj);
 }
 
-void contar_objetos(int obj)
+int detectar_baterias(int cont_baterias)
 {
-      if(obj==2)
+      int i , j;
+      for(i=0;i<N;i++)
       {
-            cont_baterias++;
-            printf("cont_baterias=%d",cont_baterias);
+            for(j=0;j<M;j++)
+            {
+                  if(mapa[i][j]==2)
+                  {
+                        if(mapa[(player.py+40)/40][player.px/40]==2||mapa[player.py/40][(player.px+40)/40]==2||mapa[player.py/40][(player.px-4)/40]==2||mapa[(player.py-4)/40][player.px/40]==2)
+                        {
+                              agarrar_objeto(2);
+                              cont_baterias++;
+                              printf("cont_baterias=%d",cont_baterias);
+                        }
+                  }
+            }
       }
-      else if(obj==5)
+      return cont_baterias;
+}
+
+int detectar_puerta(int estado_puerta)
+{
+      int i , j;
+      for(i=0;i<N;i++)
       {
-            player.llave=1;
-            printf("player.llave=%d",player.llave);
+            for(j=0;j<M;j++)
+            {
+                  if(mapa[i][j]==6) //PUERTA
+                  {
+                        if(mapa[(player.py-4)/40][player.px/40]==6 && player.llave==1)//ABRE PUERTA
+                        {
+                              printf("estado_puerta=%d",estado_puerta);
+                              estado_puerta=1;
+                              player.llave=0;
+                        }
+                  }
+            }
+      }
+      return estado_puerta;
+}
+
+void detectar_llaves()
+{
+      int i, j;
+      for(i=0;i<N;i++)
+      {
+            for(j=0;j<M;j++)
+            {
+                  if(mapa[i][j]==5)
+                  {
+                        if(mapa[(player.py+40)/40][player.px/40]==5||mapa[player.py/40][(player.px+40)/40]==5||mapa[player.py/40][(player.px-4)/40]==5||mapa[(player.py-4)/40][player.px/40]==5)
+                        {
+                              agarrar_objeto(5);
+                              player.llave=1;
+                              printf("player.llave=%d",player.llave);
+                        }
+                  }
+            }
       }
 }
 
-void indicador_bateria()
+void indicador_bateria(int cont_baterias)
 {
       stretch_blit(carga.cargabmp,carga.carga,120*cont_baterias,0,720,40,0,0,720,40);
       draw_sprite(buffer,carga.carga,670,10);
@@ -534,8 +725,6 @@ void destruir_bitmaps()
 {
       destroy_bitmap(player.personaje);
       destroy_bitmap(player.personajebmp);
-      destroy_bitmap(enemigo.enemigo);
-      destroy_bitmap(enemigo.enemigobmp);
       destroy_bitmap(buffer);
       destroy_bitmap(pared);
       destroy_bitmap(bateria);
@@ -544,5 +733,7 @@ void destruir_bitmaps()
       destroy_bitmap(luzbmp);
       destroy_bitmap(puerta);
       destroy_bitmap(puertabmp);
+     // destroy_bitmap(enemigo.enemigo);
+   //   destroy_bitmap(enemigo.enemigobmp);
 }
 
