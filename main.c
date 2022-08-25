@@ -512,7 +512,8 @@ void tipos_enemigos()
       srand(time(NULL));
       for(i=0; i<MAXENEMIGOS; i++)
       {
-            enemigos[i].tipo = rand() % 2;
+            enemigos[i].tipo = rand() % 3;
+            printf("enemigos[i].tipo = %d\n",enemigos[i].tipo);
       }
 }
 
@@ -567,10 +568,7 @@ void mover_enemigo()
       int i, detectar_luz;
       for(i=0; i<MAXENEMIGOS; i++)
       {
-
-          //  distancia_y = detectar_distanciay(distancia_y, distancia_x);
             enemigos[i].vel_pasos=1;
-
             if(enemigos[i].activado==1)
             {
                   detectar_luz = detectar_linterna(i);
@@ -588,34 +586,53 @@ void mover_enemigo()
                         {
                               if(enemigos[i].colision==0)
                               {
-                                    if(mapa[(enemigos[i].py)/40][(enemigos[i].px+44)/40] != 1)
+                                    if(mapa[(enemigos[i].py)/40][(enemigos[i].px+44)/40] != 1) //Colisión Derecha
                                     {
                                           enemigos[i].px=enemigos[i].px+enemigos[i].vel_pasos;
                                     }
-                                    else if(mapa[(enemigos[i].py)/40][(enemigos[i].px+44)/40] == 1)
+                                    else
                                     {
                                           enemigos[i].colision=1;
                                     }
                               }
                               else
                               {
-                                    if(mapa[enemigos[i].py/40][(enemigos[i].px-4)/40] != 1)
+                                    if(mapa[enemigos[i].py/40][(enemigos[i].px-4)/40] != 1) //Colisión Izquierda
                                     {
                                           enemigos[i].px=enemigos[i].px-enemigos[i].vel_pasos;
                                     }
-                                    else if(mapa[enemigos[i].py/40][(enemigos[i].px-4)/40] == 1)
+                                    else
                                     {
                                           enemigos[i].colision=0;
                                     }
                               }
-
-
-//                              if(enemigos[i].px>player.px)
-//                              {
-//                                    enemigos[i].px=enemigos[i].px-enemigos[i].vel_pasos;
-//                              }
                         }
                         else if(enemigos[i].tipo == 1)
+                        {
+                              if(enemigos[i].colision==0)
+                              {
+                                    if(mapa[(enemigos[i].py-4)/40][enemigos[i].px/40] != 1) //Colisión Arriba
+                                    {
+                                          enemigos[i].py=enemigos[i].py-enemigos[i].vel_pasos;
+                                    }
+                                    else
+                                    {
+                                          enemigos[i].colision=1;
+                                    }
+                              }
+                              else
+                              {
+                                    if(mapa[(enemigos[i].py+40)/40][enemigos[i].px/40] != 1) //Colisión Abajo
+                                    {
+                                          enemigos[i].py=enemigos[i].py+enemigos[i].vel_pasos;
+                                    }
+                                    else
+                                    {
+                                          enemigos[i].colision=0;
+                                    }
+                              }
+                        }
+                        else if(enemigos[i].tipo == 2)
                         {
                               if(enemigos[i].px<player.px)
                               {
@@ -634,7 +651,6 @@ void mover_enemigo()
                                     enemigos[i].py=enemigos[i].py-enemigos[i].vel_pasos;
                               }
                         }
-                        else{}
                   }
             }
       }

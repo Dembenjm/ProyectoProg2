@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1661441342 source:c:\users\demian\desktop\proyecto\gitproyectoprog2\main.c
+1661442891 source:c:\users\demian\desktop\proyecto\gitproyectoprog2\main.c
 	<stdio.h>
 	<string.h>
 	<stdbool.h>
