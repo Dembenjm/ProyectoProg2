@@ -56,7 +56,7 @@ int inicializar_allegro(int ventana_w, int ventana_h);
 int detectar_baterias(int cont_baterias);
 int usar_linterna(int cont_baterias);
 int detectar_puerta(int estado_puerta);
-int detectar_distanciax(int i);
+int detectar_linterna(int i);
 //int detectar_distanciay(int distancia_y, int distancia_x);
 void leer_archivo(char *nombre_archivo);
 void importar_nivel(int nvl);
@@ -157,6 +157,7 @@ int main()
                         estado_puerta = detectar_puerta(estado_puerta);
                         dibujar_enemigo();
                         cont_baterias = detectar_baterias(cont_baterias);
+                        
                         if(key[KEY_SPACE] && cont_baterias>0 && player.encendida==0)
                         {
                               cont_baterias = usar_linterna(cont_baterias);
@@ -572,7 +573,7 @@ void mover_enemigo()
 
             if(enemigos[i].activado==1)
             {
-                  detectar_luz = detectar_distanciax(i);
+                  detectar_luz = detectar_linterna(i);
                   if(player.encendida==1 && detectar_luz==1)
                   {
                         printf("detectar_luz=%d",detectar_luz);
@@ -670,9 +671,12 @@ int detectar_baterias(int cont_baterias)
                   {
                         if(mapa[(player.py+40)/40][player.px/40]==2||mapa[player.py/40][(player.px+40)/40]==2||mapa[player.py/40][(player.px-4)/40]==2||mapa[(player.py-4)/40][player.px/40]==2)
                         {
-                              agarrar_objeto(2);
-                              cont_baterias++;
-                              printf("cont_baterias=%d",cont_baterias);
+                              if(cont_baterias < MAXBATERIAS)
+                              {
+                                    agarrar_objeto(2);
+                                    cont_baterias++;
+                                    printf("cont_baterias=%d",cont_baterias);
+                              }
                         }
                   }
             }
@@ -701,10 +705,11 @@ int detectar_puerta(int estado_puerta)
       return estado_puerta;
 }
 
-int detectar_distanciax(int i)
+int detectar_linterna(int i)
 {
-      int distancia_x;
+      int distancia_x, distancia_y;
       distancia_x=(enemigos[i].px+40)/40-(player.px-120)/40;
+      distancia_y=(enemigos[i].py+40)/40-(player.py-120)/40;
       if(enemigos[i].py/40==player.py/40)
       {
             if(distancia_x>0 && distancia_x<4 && player.dir==1)
@@ -720,46 +725,23 @@ int detectar_distanciax(int i)
                   return 0;
             }
       }
-      // for(i=0; i<MAXENEMIGOS; i++)
-      // {
-      //       distancia_x=(enemigos[i].px+40)/40-(player.px-120)/40;
-      //       if(enemigos[i].py/40==player.py/40)
-      //       {
-      //             if(distancia_x>0 && distancia_x<4 && player.dir==1)
-      //             {
-      //                   return 1;
-      //             } //DETECTAR LINTERNA HACIA LA IZQUIERDA
-      //             else if(distancia_x<=7 && distancia_x>=4 && player.dir==3)
-      //             {
-      //                   return 1;
-      //             } //DETECTAR LINTERNA HACIA LA DERECHA
-      //             else
-      //             {
-      //                   return 0;
-      //             }
-      //       }
-      // }
-}
-
-/*int detectar_distanciay(int distancia_y, int distancia_x)
-{
-      int i, j;
-      for(i=0;i<N;i++)
+      else if (enemigos[i].px/40==player.px/40)
       {
-            for(j=0;j<M;j++)
+            if(distancia_y>0 && distancia_y<4 && player.dir==0)
             {
-                  if(distancia_y>0&&distancia_y<4&&enemigos[i].px/40==player.px/40&&player.dir==0)
-                  {
-                        printf("linterna detectada abajo\n");
-                  }//DETECTAR LINTERNA HACIA ARRIBA
-                  else if(distancia_y<=7&&distancia_y>=4&&enemigos[i].px/40==player.px/40&&player.dir==2)
-                  {
-                        printf("linterna detectada abajo\n");
-                  } //DETECTAR LINTERNA HACIA ABAJO
+                  return 1;
+            }//DETECTAR LINTERNA HACIA ARRIBA
+            else if(distancia_y<=7 && distancia_y>=4 && player.dir==2)
+            {
+                  return 1;
+            }
+            else
+            {
+                  return 0;
             }
       }
-      return distancia_y;
-}*/
+
+}
 
 void detectar_llaves()
 {
@@ -783,8 +765,16 @@ void detectar_llaves()
 
 void indicador_bateria(int cont_baterias)
 {
-      stretch_blit(carga.cargabmp,carga.carga,120*cont_baterias,0,720,40,0,0,720,40);
-      draw_sprite(buffer,carga.carga,670,10);
+      if(cont_baterias < MAXBATERIAS)
+      {
+            stretch_blit(carga.cargabmp,carga.carga,120*cont_baterias,0,720,40,0,0,720,40);
+            draw_sprite(buffer,carga.carga,670,10);
+      }
+      else
+      {
+            stretch_blit(carga.cargabmp,carga.carga,120*MAXBATERIAS,0,720,40,0,0,720,40);
+            draw_sprite(buffer,carga.carga,670,10);      
+      }
 }
 
 void destruir_bitmaps()
