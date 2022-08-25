@@ -57,6 +57,7 @@ int detectar_baterias(int cont_baterias);
 int usar_linterna(int cont_baterias);
 int detectar_puerta(int estado_puerta);
 int detectar_linterna(int i);
+int def_movimiento(int i);
 //int detectar_distanciay(int distancia_y, int distancia_x);
 void leer_archivo(char *nombre_archivo);
 void importar_nivel(int nvl);
@@ -563,9 +564,17 @@ int usar_linterna(int cont_baterias)
       return cont_baterias;
 }
 
+int def_movimiento(int i)
+{
+      if(enemigos[i].px<player.px){return 0;}
+      if(enemigos[i].px>player.px){return 1;}
+      if(enemigos[i].py<player.py){return 2;}
+      if(enemigos[i].py>player.py){return 3;}
+}
+
 void mover_enemigo()
 {
-      int i, detectar_luz;
+      int i, detectar_luz, distancia_x, distancia_y, x;
       for(i=0; i<MAXENEMIGOS; i++)
       {
             enemigos[i].vel_pasos=1;
@@ -634,22 +643,23 @@ void mover_enemigo()
                         }
                         else if(enemigos[i].tipo == 2)
                         {
-                              if(enemigos[i].px<player.px)
-                              {
-                                    enemigos[i].px=enemigos[i].px+enemigos[i].vel_pasos;
-                              }
-                              if(enemigos[i].px>player.px)
-                              {
-                                    enemigos[i].px=enemigos[i].px-enemigos[i].vel_pasos;
-                              }
-                              if(enemigos[i].py<player.py)
-                              {
-                                    enemigos[i].py=enemigos[i].py+enemigos[i].vel_pasos;
-                              }
-                              if(enemigos[i].py>player.py)
-                              {
-                                    enemigos[i].py=enemigos[i].py-enemigos[i].vel_pasos;
-                              }
+                              x = def_movimiento(i);
+                              printf("x=%d",x);
+                        
+                              switch (x) {
+                                                case 0:
+                                                      enemigos[i].px=enemigos[i].px+enemigos[i].vel_pasos;
+                                                      break;
+                                                case 1:
+                                                      enemigos[i].px=enemigos[i].px-enemigos[i].vel_pasos;
+                                                      break;
+                                                case 2:
+                                                      enemigos[i].py=enemigos[i].py+enemigos[i].vel_pasos;
+                                                      break;
+                                                case 3:
+                                                      enemigos[i].py=enemigos[i].py-enemigos[i].vel_pasos;
+                                                      break;
+                                          }
                         }
                   }
             }
