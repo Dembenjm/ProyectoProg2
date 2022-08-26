@@ -54,6 +54,7 @@ struct indicador
 
 int inicializar_allegro(int ventana_w, int ventana_h);
 int detectar_baterias(int cont_baterias);
+int detector_enemigos();
 int usar_linterna(int cont_baterias);
 int detectar_puerta(int estado_puerta);
 int detectar_linterna(int i);
@@ -104,23 +105,23 @@ int main()
 {
       //DECLARACION DE VARIABLES LOCALES MAIN
       int cont=0;
-      int ventana_w=800; //LOCAL
-      int ventana_h=600; //LOCAL
-      int cont_baterias=0; //LOCAL
-      int estado_puerta=0; //LOCAL
-      int mapa_importado=0; //LOCAL
+      int ventana_w=800; 
+      int ventana_h=600; 
+      int cont_baterias=0; 
+      int estado_puerta=0; 
+      int mapa_importado=0; 
       int nivel=0;
 
       //INICIALIZACION DE VARIABLES
       player.vida=1;
       player.llave=0;
       player.encendida=0;
-  //    enemigo.activado=0;  //ver inicializar despues
       inicializar_allegro(ventana_w, ventana_h);
       crear_bitmaps();
-      tipos_enemigos(); //OBSERVAR
+      tipos_enemigos();
       cargar_imagenes();
       cargar_musica();
+
       //CICLO DEL JUEGO
       while (!key[KEY_ESC])//mientras la tecla que se presione sea distinta que esc se mantiene dentro del bucle y por lo tanto el juego se sigue ejecutando
       {
@@ -143,7 +144,6 @@ int main()
                         {
                               play_midi(musica2,1);
                         }
-
                         importar_nivel(nivel);
                         pos_inicialplayer();
                         colision_enemigo0();
@@ -155,6 +155,7 @@ int main()
                         dibujar_personaje();
                         mover_personaje();
                         detectar_llaves();
+                        detector_enemigos();
                         estado_puerta = detectar_puerta(estado_puerta);
                         dibujar_enemigo();
                         cont_baterias = detectar_baterias(cont_baterias);
@@ -379,6 +380,20 @@ void pos_inicialplayer()
       }
 }
 
+int detector_enemigos()
+{
+      int i, j;
+      for(i=0;i<N;i++)
+      {     for(j=0;j<M;j++)
+            {
+                  if(mapa[player.py/40][player.px/40]==3)
+                  {
+                        mapa[i][j]==0;
+                  }
+            }
+      }
+}
+
 void dibujar_personaje()
 {
       if(player.vida!=0)
@@ -509,7 +524,7 @@ void mover_personaje(int estado_puerta)
 
 void tipos_enemigos()
 {
-      int i;
+      int i=0;
       srand(time(NULL));
       for(i=0; i<MAXENEMIGOS; i++)
       {
@@ -574,16 +589,14 @@ int def_movimiento(int i)
 
 void mover_enemigo()
 {
-      int i, detectar_luz, distancia_x, distancia_y, x;
-      for(i=0; i<MAXENEMIGOS; i++)
+      int i, detectar_luz, x, distancia_x, distancia_y;
+      for(i=0; i < MAXENEMIGOS; i++)
       {
-            enemigos[i].vel_pasos=1;
             if(enemigos[i].activado==1)
             {
                   detectar_luz = detectar_linterna(i);
                   if(player.encendida==1 && detectar_luz==1)
                   {
-                        printf("detectar_luz=%d",detectar_luz);
                         if(detectar_luz == 0)
                         {
                               enemigos[i].colision=1;
@@ -593,9 +606,10 @@ void mover_enemigo()
                   {
                         if(enemigos[i].tipo == 0)
                         {
+                              enemigos[i].vel_pasos=3;
                               if(enemigos[i].colision==0)
                               {
-                                    if(mapa[(enemigos[i].py)/40][(enemigos[i].px+44)/40] != 1) //Colisión Derecha
+                                    if(mapa[(enemigos[i].py)/40][(enemigos[i].px+44)/40] == 0) //Colisión Derecha
                                     {
                                           enemigos[i].px=enemigos[i].px+enemigos[i].vel_pasos;
                                     }
@@ -606,7 +620,7 @@ void mover_enemigo()
                               }
                               else
                               {
-                                    if(mapa[enemigos[i].py/40][(enemigos[i].px-4)/40] != 1) //Colisión Izquierda
+                                    if(mapa[enemigos[i].py/40][(enemigos[i].px-4)/40] == 0) //Colisión Izquierda
                                     {
                                           enemigos[i].px=enemigos[i].px-enemigos[i].vel_pasos;
                                     }
@@ -618,9 +632,10 @@ void mover_enemigo()
                         }
                         else if(enemigos[i].tipo == 1)
                         {
+                              enemigos[i].vel_pasos=3;
                               if(enemigos[i].colision==0)
                               {
-                                    if(mapa[(enemigos[i].py-4)/40][enemigos[i].px/40] != 1) //Colisión Arriba
+                                    if(mapa[(enemigos[i].py-4)/40][enemigos[i].px/40] == 0) //Colisión Arriba
                                     {
                                           enemigos[i].py=enemigos[i].py-enemigos[i].vel_pasos;
                                     }
@@ -631,7 +646,7 @@ void mover_enemigo()
                               }
                               else
                               {
-                                    if(mapa[(enemigos[i].py+40)/40][enemigos[i].px/40] != 1) //Colisión Abajo
+                                    if(mapa[(enemigos[i].py+40)/40][enemigos[i].px/40] == 0) //Colisión Abajo
                                     {
                                           enemigos[i].py=enemigos[i].py+enemigos[i].vel_pasos;
                                     }
@@ -643,29 +658,24 @@ void mover_enemigo()
                         }
                         else if(enemigos[i].tipo == 2)
                         {
-                              x = def_movimiento(i);
-                              printf("x=%d",x);
-                        
-                              switch (x) {
-                                                case 0:
-                                                      enemigos[i].px=enemigos[i].px+enemigos[i].vel_pasos;
-                                                      break;
-                                                case 1:
-                                                      enemigos[i].px=enemigos[i].px-enemigos[i].vel_pasos;
-                                                      break;
-                                                case 2:
-                                                      enemigos[i].py=enemigos[i].py+enemigos[i].vel_pasos;
-                                                      break;
-                                                case 3:
-                                                      enemigos[i].py=enemigos[i].py-enemigos[i].vel_pasos;
-                                                      break;
-                                          }
+                              enemigos[i].vel_pasos=1;
+                              distancia_x = enemigos[i].px - player.px;
+                              distancia_y = enemigos[i].py - player.py;
+                              enemigos[i].px -= enemigos[i].vel_pasos * obtener_dir(distancia_x);
+                              enemigos[i].py -= enemigos[i].vel_pasos * obtener_dir(distancia_y);
                         }
                   }
             }
       }
 }
-
+int obtener_dir(n)
+{
+      if(n < 0)
+            return -1;
+      if(n > 0)
+            return 1;
+      return 0;
+}
 void agarrar_objeto(int obj) //elemento de la matriz se transforma a 0
 {
       if(mapa[(player.py+40)/40][player.px/40]==obj)

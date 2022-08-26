@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1661448586 source:c:\users\demian\desktop\proyecto\gitproyectoprog2\main.c
+1661465072 source:c:\users\demian\desktop\proyecto\gitproyectoprog2\main.c
 	<stdio.h>
 	<string.h>
 	<stdbool.h>
@@ -23,7 +23,7 @@
 	<allegro.h>
 	<time.h>
 
-1661276146 source:c:\users\administrador\desktop\proyectoprog2\main.c
+1661471153 source:c:\users\administrador\desktop\proyectoprog2\main.c
 	<stdio.h>
 	<string.h>
 	<stdbool.h>
@@ -72,6 +72,14 @@
 	<time.h>
 
 1661386060 source:c:\users\demian\desktop\proyectoprog2 - profe tito modificado5\main.c
+	<stdio.h>
+	<string.h>
+	<stdbool.h>
+	<stdlib.h>
+	<allegro.h>
+	<time.h>
+
+1661479473 source:c:\users\administrador\desktop\proyectoprog2 - copia\main.c
 	<stdio.h>
 	<string.h>
 	<stdbool.h>
