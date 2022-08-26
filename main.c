@@ -15,7 +15,7 @@
 #include<allegro.h>
 #include<time.h>
 #define N 15
-#define M 20
+#define M 21
 #define L 11
 #define MAXBATERIAS 5
 #define MAXENEMIGOS 4
@@ -98,7 +98,7 @@ MIDI *musica1;
 MIDI *musica2;
 
 //DECLARACI�N DE VARIABLES
-int mapa[N][M];
+char mapa[N][M];
 int tiempo_luz;
 
 int main()
@@ -176,7 +176,7 @@ int main()
                         clear_bitmap(buffer);
                         rest(5);
 
-                        if(mapa[(player.py+40)/40][player.px/40]==6 && estado_puerta==1)
+                        if(mapa[(player.py+40)/40][player.px/40]=='6' && estado_puerta == 1)
                         {
                               nivel++;
                               mapa_importado=0;
@@ -278,7 +278,7 @@ void leer_archivo(char *nombre_archivo)
 {
       int i,j;
       FILE *fdata; //es un tipo de estructura definida como ARCHIVO. Se considera un tipo de dato opaco ya que su implementaci�n est� oculta. No sabemos qu� constituye el tipo, solo usamos el puntero al tipo y la biblioteca conoce el interior del tipo y puede usar los datos.
-      fdata=fopen(nombre_archivo,"r"); //abre el nombre de archivo al que apunta, por nombre de archivo usando el modo dado "r" Abre un archivo para lectura
+      fdata=fopen(nombre_archivo,"rt"); //abre el nombre de archivo al que apunta, por nombre de archivo usando el modo dado "r" Abre un archivo para lectura
       if(fdata==NULL)
       {
             printf("error");
@@ -288,7 +288,7 @@ void leer_archivo(char *nombre_archivo)
       {
             for(j=0;j<M;j++)
             {
-                  fscanf(fdata,"%d", &mapa[i][j]);
+                  mapa[i][j] = fgetc(fdata);
             }
       }
       fclose(fdata);
@@ -301,44 +301,44 @@ void pintar_fondo(int estado_puerta)
       {
             for(j=0;j<M;j++)
             {
-                  if(mapa[i][j]==0)//PISO
+                  if(mapa[i][j]=='0')//PISO
                   {
                         draw_sprite(buffer, piso, j*40, i*40);
                   }
-                  if(mapa[i][j]==1)//PARED
+                  if(mapa[i][j]=='1')//PARED
                   {
                         draw_sprite(buffer, pared, j*40, i*40);
                   }
-                  if(mapa[i][j]==2)//BATERIA
+                  if(mapa[i][j]=='2')//BATERIA
                   {
                         draw_sprite(buffer, piso, j*40, i*40);
                         draw_sprite(buffer, bateriabmp, j*40, i*40);
                   }
 
-                  if(mapa[i][j]==3)//PISO DETECTOR
+                  if(mapa[i][j]=='3')//PISO DETECTOR
                   {
                         draw_sprite(buffer, piso, j*40, i*40);
                   }
-                  if(mapa[i][j]==4)//ENEMIGO
+                  if(mapa[i][j]=='4')//ENEMIGO
                   {
                         if(cont_enemigo<MAXENEMIGOS)
                         {
                               enemigos[cont_enemigo].activado=1;
                               enemigos[cont_enemigo].px=j*40;
                               enemigos[cont_enemigo].py=i*40;
-                              mapa[i][j]=0;
+                              mapa[i][j]='0';
                               cont_enemigo++;
                         }
                         draw_sprite(buffer, piso, j*40, i*40);
                   }
-                  if(mapa[i][j]==5)//LLAVE
+                  if(mapa[i][j]=='5')//LLAVE
                   {
                         draw_sprite(buffer, piso, j*40, i*40);
                         stretch_blit(llavebmp,llave,0,0,300,300,0,0,40,40);
                         draw_sprite(buffer, llave, j*40, i*40);
                   }
 
-                  if(mapa[i][j]==6)//PUERTA
+                  if(mapa[i][j]=='6')//PUERTA
                   {
                         draw_sprite(buffer, piso, j*40, i*40);
                         if(estado_puerta==0)//CERRADA
@@ -352,12 +352,12 @@ void pintar_fondo(int estado_puerta)
                               draw_sprite(buffer,puerta,j*40,i*40);
                         }
                   }
-                  if(mapa[i][j]==7)//PUERTA CERRADA CON COLISION
+                  if(mapa[i][j]=='7')//PUERTA CERRADA CON COLISION
                   {
                         stretch_blit(puertabmp,puerta,160,0,40,40,0,0,40,40);
                         draw_sprite(buffer,puerta,j*40,i*40);
                   }
-                  if(mapa[i][j]==8)//POSICION INICIAL PERSONAJE
+                  if(mapa[i][j]=='8')//POSICION INICIAL PERSONAJE
                   {
                         draw_sprite(buffer, piso, j*40, i*40);
                   }
@@ -371,7 +371,7 @@ void pos_inicialplayer()
       for(i=0;i<N;i++)
       {     for(j=0;j<M;j++)
             {
-                  if(mapa[i][j]==8)
+                  if(mapa[i][j]=='8')
                   {
                         player.py = i*40;
                         player.px = j*40;
@@ -386,9 +386,9 @@ int detector_enemigos()
       for(i=0;i<N;i++)
       {     for(j=0;j<M;j++)
             {
-                  if(mapa[player.py/40][player.px/40]==3)
+                  if(mapa[player.py/40][player.px/40]=='3')
                   {
-                        mapa[i][j]==0;
+                        mapa[i][j]=0;
                   }
             }
       }
@@ -441,7 +441,7 @@ void mover_personaje(int estado_puerta)
       if(key[KEY_D]) //movimiento hacia la DERECHA cuando se presiona la tecla D
       {
             player.dir=3;
-            if(mapa[(player.py+8)/40][(player.px+44)/40] != 1 && mapa[(player.py+32)/40][(player.px+44)/40] != 1) //si la posici�n del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
+            if(mapa[(player.py+8)/40][(player.px+44)/40] != '1' && mapa[(player.py+32)/40][(player.px+44)/40] != '1') //si la posici�n del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
             {
                   player.px=player.px+player.vel_pasos;
             }
@@ -451,7 +451,7 @@ void mover_personaje(int estado_puerta)
       else if(key[KEY_A]) //movimiento hacia la IZQUIERDA cuando se presiona la tecla A
       {
             player.dir=1;
-            if(mapa[(player.py+8)/40][(player.px-4)/40] != 1 && mapa[(player.py+32)/40][(player.px-4)/40] != 1)
+            if(mapa[(player.py+8)/40][(player.px-4)/40] != '1' && mapa[(player.py+32)/40][(player.px-4)/40] != '1')
             {
                   player.px=player.px-player.vel_pasos;
             }
@@ -460,9 +460,9 @@ void mover_personaje(int estado_puerta)
       else if(key[KEY_W]) //movimiento hacia ARRIBA cuando se presiona la tecla W
       {
             player.dir=0;
-            if(mapa[(player.py-4)/40][(player.px+10)/40]!=1 && mapa[(player.py-4)/40][(player.px+30)/40]!=1)
+            if(mapa[(player.py-4)/40][(player.px+10)/40]!='1' && mapa[(player.py-4)/40][(player.px+30)/40]!='1')
             {
-                  if(mapa[(player.py-4)/40][player.px/40]==6 && mapa[(player.py-4)/40][(player.px+30)/40]==6) //Arreglar
+                  if(mapa[(player.py-4)/40][player.px/40]=='6' && mapa[(player.py-4)/40][(player.px+30)/40]=='6') //Arreglar
                   {
                         if(estado_puerta==1)
                         {
@@ -479,16 +479,16 @@ void mover_personaje(int estado_puerta)
       else if(key[KEY_S]) //movimiento hacia ABAJO cuando se presiona la tecla S
       {
             player.dir=2;
-            if(mapa[(player.py+44)/40][(player.px+4)/40]!=1 && mapa[(player.py+44)/40][(player.px+30)/40]!=1)
+            if(mapa[(player.py+44)/40][(player.px+4)/40]!='1' && mapa[(player.py+44)/40][(player.px+30)/40]!='1')
             {
-                  if(mapa[(player.py+44)/40][(player.px+4)/40]==6 && mapa[(player.py+44)/40][(player.px+30)/40]==6)
+                  if(mapa[(player.py+44)/40][(player.px+4)/40]=='6' && mapa[(player.py+44)/40][(player.px+30)/40]=='6')
                   {
                         if(estado_puerta==1)
                         {
                               player.py=player.py+player.vel_pasos;
                         }
                   }
-                  else if(mapa[(player.py+44)/40][(player.px+4)/40]==7 && mapa[(player.py+44)/40][(player.px+30)/40]==7)
+                  else if(mapa[(player.py+44)/40][(player.px+4)/40]=='7' && mapa[(player.py+44)/40][(player.px+30)/40]=='7')
                   {
                         if(estado_puerta==1)
                         {
@@ -589,7 +589,7 @@ int def_movimiento(int i)
 
 void mover_enemigo()
 {
-      int i, detectar_luz, x, distancia_x, distancia_y;
+      int i, detectar_luz, distancia_x, distancia_y;
       for(i=0; i < MAXENEMIGOS; i++)
       {
             if(enemigos[i].activado==1)
@@ -609,7 +609,7 @@ void mover_enemigo()
                               enemigos[i].vel_pasos=3;
                               if(enemigos[i].colision==0)
                               {
-                                    if(mapa[(enemigos[i].py)/40][(enemigos[i].px+44)/40] == 0) //Colisión Derecha
+                                    if(mapa[(enemigos[i].py)/40][(enemigos[i].px+44)/40] == '0') //Colisión Derecha
                                     {
                                           enemigos[i].px=enemigos[i].px+enemigos[i].vel_pasos;
                                     }
@@ -620,7 +620,7 @@ void mover_enemigo()
                               }
                               else
                               {
-                                    if(mapa[enemigos[i].py/40][(enemigos[i].px-4)/40] == 0) //Colisión Izquierda
+                                    if(mapa[enemigos[i].py/40][(enemigos[i].px-4)/40] == '0') //Colisión Izquierda
                                     {
                                           enemigos[i].px=enemigos[i].px-enemigos[i].vel_pasos;
                                     }
@@ -635,7 +635,7 @@ void mover_enemigo()
                               enemigos[i].vel_pasos=3;
                               if(enemigos[i].colision==0)
                               {
-                                    if(mapa[(enemigos[i].py-4)/40][enemigos[i].px/40] == 0) //Colisión Arriba
+                                    if(mapa[(enemigos[i].py-4)/40][enemigos[i].px/40] == '0') //Colisión Arriba
                                     {
                                           enemigos[i].py=enemigos[i].py-enemigos[i].vel_pasos;
                                     }
@@ -646,7 +646,7 @@ void mover_enemigo()
                               }
                               else
                               {
-                                    if(mapa[(enemigos[i].py+40)/40][enemigos[i].px/40] == 0) //Colisión Abajo
+                                    if(mapa[(enemigos[i].py+40)/40][enemigos[i].px/40] == '0') //Colisión Abajo
                                     {
                                           enemigos[i].py=enemigos[i].py+enemigos[i].vel_pasos;
                                     }
@@ -680,19 +680,19 @@ void agarrar_objeto(int obj) //elemento de la matriz se transforma a 0
 {
       if(mapa[(player.py+40)/40][player.px/40]==obj)
       {
-            mapa[(player.py+40)/40][player.px/40]=0;
+            mapa[(player.py+40)/40][player.px/40]='0';
       }
       else if(mapa[player.py/40][(player.px+40)/40]==obj)
       {
-            mapa[player.py/40][(player.px+40)/40]=0;
+            mapa[player.py/40][(player.px+40)/40]='0';
       }
       else if(mapa[player.py/40][(player.px-4)/40]==obj)
       {
-            mapa[player.py/40][(player.px-4)/40]=0;
+            mapa[player.py/40][(player.px-4)/40]='0';
       }
       else if(mapa[(player.py-4)/40][player.px/40]==obj)
       {
-            mapa[(player.py-4)/40][player.px/40]=0;
+            mapa[(player.py-4)/40][player.px/40]='0';
       }
 }
 
@@ -703,13 +703,13 @@ int detectar_baterias(int cont_baterias)
       {
             for(j=0;j<M;j++)
             {
-                  if(mapa[i][j]==2)
+                  if(mapa[i][j]=='2')
                   {
-                        if(mapa[(player.py+40)/40][player.px/40]==2||mapa[player.py/40][(player.px+40)/40]==2||mapa[player.py/40][(player.px-4)/40]==2||mapa[(player.py-4)/40][player.px/40]==2)
+                        if(mapa[(player.py+40)/40][player.px/40]=='2'||mapa[player.py/40][(player.px+40)/40]=='2'||mapa[player.py/40][(player.px-4)/40]=='2'||mapa[(player.py-4)/40][player.px/40]=='2')
                         {
                               if(cont_baterias < MAXBATERIAS)
                               {
-                                    agarrar_objeto(2);
+                                    agarrar_objeto('2');
                                     cont_baterias++;
                                     printf("cont_baterias=%d",cont_baterias);
                               }
@@ -727,9 +727,9 @@ int detectar_puerta(int estado_puerta)
       {
             for(j=0;j<M;j++)
             {
-                  if(mapa[i][j]==6) //PUERTA
+                  if(mapa[i][j]=='6') //PUERTA
                   {
-                        if(mapa[(player.py-4)/40][player.px/40]==6 && player.llave==1)//ABRE PUERTA
+                        if(mapa[(player.py-4)/40][player.px/40]=='6' && player.llave==1)//ABRE PUERTA
                         {
                               printf("estado_puerta=%d",estado_puerta);
                               estado_puerta=1;
@@ -786,11 +786,11 @@ void detectar_llaves()
       {
             for(j=0;j<M;j++)
             {
-                  if(mapa[i][j]==5)
+                  if(mapa[i][j]=='5')
                   {
-                        if(mapa[(player.py+40)/40][player.px/40]==5||mapa[player.py/40][(player.px+40)/40]==5||mapa[player.py/40][(player.px-4)/40]==5||mapa[(player.py-4)/40][player.px/40]==5)
+                        if(mapa[(player.py+40)/40][player.px/40]=='5'||mapa[player.py/40][(player.px+40)/40]=='5'||mapa[player.py/40][(player.px-4)/40]=='5'||mapa[(player.py-4)/40][player.px/40]=='5')
                         {
-                              agarrar_objeto(5);
+                              agarrar_objeto('5');
                               player.llave=1;
                               printf("player.llave=%d",player.llave);
                         }
