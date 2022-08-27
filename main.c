@@ -56,7 +56,7 @@ int usar_linterna(int cont_baterias);
 int detectar_puerta(int estado_puerta);
 int detectar_linterna(int i);
 int def_movimiento(int i);
-//int detectar_distanciay(int distancia_y, int distancia_x);
+int obtener_dir(int n);
 void leer_archivo(char *nombre_archivo);
 void importar_nivel(int nvl);
 void inicializar_musica(int nvl);
@@ -64,7 +64,8 @@ void efectos_sonido(int n_efx);
 void agarrar_objeto(int obj);
 void mov_enem_horizontal(int i, int prox_pos_enemigox);
 void mov_enem_vertical(int i, int prox_pos_enemigoy);
-int obtener_dir(int n);
+void detect_col_enemigo_player(int i);
+int detec_punto_espacio(int planoX1,int planoX2,int planoY1, int planoY2, int puntoX, int puntoY);
 void mover_personaje();
 void tipos_enemigos();
 void mover_enemigo();
@@ -703,11 +704,39 @@ void mover_enemigo()
                         }
                   }
             }
+            detect_col_enemigo_player(i);
       }
 }
+
+void detect_col_enemigo_player(int i)
+{
+      int enemigox1,enemigox2,enemigoy1,enemigoy2,diferenciaX,diferenciaY;
+      diferenciaX = 10;
+      diferenciaY = 10;
+      enemigox1 = enemigos[i].px-diferenciaX;
+      enemigox2 = enemigos[i].px+40-diferenciaX;
+      enemigoy1 = enemigos[i].py+diferenciaY;
+      enemigoy2 = enemigos[i].py+40+diferenciaY;
+      if(detec_punto_espacio(enemigox1,enemigox2,enemigoy1,enemigoy2,player.px,player.py) || detec_punto_espacio(enemigox1,enemigox2,enemigoy1,enemigoy2,player.px+40,player.py) || detec_punto_espacio(enemigox1,enemigox2,enemigoy1,enemigoy2,player.px,player.py+40) || detec_punto_espacio(enemigox1,enemigox2,enemigoy1,enemigoy2,player.px+40,player.py+40))
+      {
+            player.vida=0;
+            printf("MUERTO");
+      }
+}
+
+int detec_punto_espacio(int planoX1,int planoX2,int planoY1, int planoY2, int puntoX, int puntoY)
+{
+      if(puntoX >= planoX1 && puntoX <= planoX2 && puntoY >= planoY1 && puntoY <= planoY2)
+      {
+            return 1;
+      }
+      return 0;
+}
+
 void mov_enem_horizontal(int i, int prox_pos_enemigox)
 {
-      if(mapa[(prox_pos_enemigox)/40][enemigos[i].py/40] != '1' && mapa[(prox_pos_enemigox+40)/40][enemigos[i].py/40] != '1' && mapa[(prox_pos_enemigox)/40][(enemigos[i].py+40)/40] != '1' && mapa[(prox_pos_enemigox+40)/40][(enemigos[i].py+40)/40] != '1')
+      int diferencia=4;
+      if(mapa[(enemigos[i].py+diferencia)/40][(prox_pos_enemigox)/40] != '1' && mapa[(enemigos[i].py+diferencia)/40][(prox_pos_enemigox+40)/40] != '1' && mapa[(enemigos[i].py+40-diferencia)/40][(prox_pos_enemigox)/40] != '1' && mapa[(enemigos[i].py+40-diferencia)/40][(prox_pos_enemigox+40)/40] != '1')
       {
             enemigos[i].px -= enemigos[i].vel_pasos * enemigos[i].dirx;
       }
@@ -715,10 +744,11 @@ void mov_enem_horizontal(int i, int prox_pos_enemigox)
 
 void mov_enem_vertical(int i, int prox_pos_enemigoy)
 {
-       if(mapa[enemigos[i].px/40][(prox_pos_enemigoy)/40] != '1' && mapa[enemigos[i].px/40][(prox_pos_enemigoy+40)/40] != '1' && mapa[(enemigos[i].px+40)/40][(prox_pos_enemigoy)/40] != '1' && mapa[(enemigos[i].px+40)/40][(prox_pos_enemigoy+40)/40] != '1')
-       {
-             enemigos[i].py -= enemigos[i].vel_pasos * enemigos[i].diry;
-       }
+      int diferencia=4;
+      if(mapa[(prox_pos_enemigoy)/40][(enemigos[i].px + diferencia)/40] != '1' && mapa[(prox_pos_enemigoy+40)/40][(enemigos[i].px + diferencia)/40] != '1' && mapa[(prox_pos_enemigoy)/40][(enemigos[i].px+40 - diferencia)/40] != '1' && mapa[(prox_pos_enemigoy+40)/40][(enemigos[i].px+40 - diferencia)/40] != '1')
+      {
+            enemigos[i].py -= enemigos[i].vel_pasos * enemigos[i].diry;
+      }
 }
 
 int obtener_dir(int n)
