@@ -62,14 +62,15 @@ void importar_nivel(int nvl);
 void inicializar_musica(int nvl);
 void efectos_sonido(int n_efx);
 void agarrar_objeto(int obj);
-void mov_enem_horizontal(int num_enem, int dirx);
-void mov_enem_vertical(int num_enem, int diry);
+void mov_enem_horizontal(int i, int prox_pos_enemigox);
+void mov_enem_vertical(int i, int prox_pos_enemigoy);
 int obtener_dir(int n);
 void mover_personaje();
 void tipos_enemigos();
 void mover_enemigo();
 void cargar_bitmaps();
 void pintar_fondo();
+void pintar_objetos(int estado_puerta);
 void dibujar_personaje();
 void dibujar_enemigo();
 void indicador_bateria();
@@ -135,21 +136,22 @@ int main()
             {
                   if(mapa_importado == 0)
                   {
-                        if(nivel==1)
-                        {
-                              play_midi(musica1,1);
-                        }
-                        else if(nivel==2)
-                        {
-                              play_midi(musica2,1);
-                        }
+                        // if(nivel==1)
+                        // {
+                        //       play_midi(musica1,1);
+                        // }
+                        // else if(nivel==2)
+                        // {
+                        //       play_midi(musica2,1);
+                        // }
                         importar_nivel(nivel);
                         pos_inicialplayer();
                         mapa_importado=1;
                   }
                   else
                   {
-                        pintar_fondo(estado_puerta);
+                        pintar_fondo();
+                        pintar_objetos(estado_puerta);
                         dibujar_personaje();
                         mover_personaje();
                         detectar_llaves();
@@ -292,9 +294,9 @@ void leer_archivo(char *nombre_archivo)
       fclose(fdata);
 }
 
-void pintar_fondo(int estado_puerta)
+void pintar_fondo()
 {
-      int i , j, cont_enemigo=0;
+      int i , j;
       for(i=0;i<N;i++)
       {
             for(j=0;j<M;j++)
@@ -307,12 +309,22 @@ void pintar_fondo(int estado_puerta)
                   {
                         draw_sprite(buffer, pared, j*40, i*40);
                   }
+            }
+      }
+}
+
+void pintar_objetos(int estado_puerta)
+{
+      int i,j,cont_enemigo;
+      for(i=0;i<N;i++)
+      {
+            for(j=0;j<M;j++)
+            {
                   if(mapa[i][j]=='2')//BATERIA
                   {
                         draw_sprite(buffer, piso, j*40, i*40);
                         draw_sprite(buffer, bateriabmp, j*40, i*40);
                   }
-
                   if(mapa[i][j]=='3')//PISO DETECTOR
                   {
                         draw_sprite(buffer, piso, j*40, i*40);
@@ -335,20 +347,44 @@ void pintar_fondo(int estado_puerta)
                         stretch_blit(llavebmp,llave,0,0,300,300,0,0,40,40);
                         draw_sprite(buffer, llave, j*40, i*40);
                   }
-
                   if(mapa[i][j]=='6')//PUERTA
                   {
                         draw_sprite(buffer, piso, j*40, i*40);
-                        if(estado_puerta==0)//CERRADA
+                        if(i == 0) //ARRIBA
                         {
-                              stretch_blit(puertabmp,puerta,0,0,40,40,0,0,40,40);
-                              draw_sprite(buffer,puerta,j*40,i*40);
+                              if(estado_puerta==0)//CERRADA
+                              {
+                                    stretch_blit(puertabmp,puerta,0,0,40,40,0,0,40,40);
+                                    draw_sprite(buffer,puerta,j*40,i*40);
+                              }
+                              else if(estado_puerta==1)//ABIERTA
+                              {
+                                    stretch_blit(puertabmp,puerta,40,0,40,40,0,0,40,40);
+                                    draw_sprite(buffer,puerta,j*40,i*40);
+                              }
                         }
-                        else if(estado_puerta==1)//ABIERTA
+                        else if(j == 0)
                         {
-                              stretch_blit(puertabmp,puerta,40,0,40,40,0,0,40,40);
-                              draw_sprite(buffer,puerta,j*40,i*40);
+                              if(estado_puerta==0)//CERRADA
+                              {
+                                    stretch_blit(puertabmp,puerta,40,0,40,40,0,0,40,40);
+                                    draw_sprite(buffer,puerta,j*40,i*40);
+                              }
+                              else if(estado_puerta==1)//ABIERTA
+                              {
+                                    stretch_blit(puertabmp,puerta,0,0,40,40,0,0,40,40);
+                                    draw_sprite(buffer,puerta,j*40,i*40);
+                              }
                         }
+                        // else if(i==N)
+                        // {
+
+                        // }
+                        // else if(j==M)
+                        // {
+
+                        // }
+
                   }
                   if(mapa[i][j]=='7')//PUERTA CERRADA CON COLISION
                   {
@@ -577,17 +613,9 @@ int usar_linterna(int cont_baterias)
       return cont_baterias;
 }
 
-int def_movimiento(int i)
-{
-      if(enemigos[i].px<player.px){return 0;}
-      if(enemigos[i].px>player.px){return 1;}
-      if(enemigos[i].py<player.py){return 2;}
-      if(enemigos[i].py>player.py){return 3;}
-}
-
 void mover_enemigo()
 {
-      int i, detectar_luz, distancia_x, distancia_y, prox_pos_enemigox, prox_pos_enemigoy, diferencia;
+      int i, detectar_luz, distancia_x, distancia_y, prox_pos_enemigox, prox_pos_enemigoy, diferencia=4;;
       for(i=0; i < MAXENEMIGOS; i++)
       {
             if(enemigos[i].activado==1)
@@ -658,11 +686,10 @@ void mover_enemigo()
                               enemigos[i].vel_pasos=1;
                               distancia_x = enemigos[i].px - player.px;
                               distancia_y = enemigos[i].py - player.py;
-                              diferencia = 4;
                               enemigos[i].dirx = obtener_dir(distancia_x);
                               enemigos[i].diry = obtener_dir(distancia_y);
-                              prox_pos_enemigox = enemigos[i].px - enemigos[i].vel_pasos * enemigos[i].dirx;
-                              prox_pos_enemigoy = enemigos[i].py - enemigos[i].vel_pasos * enemigos[i].diry;
+                              prox_pos_enemigox = enemigos[i].px - (enemigos[i].vel_pasos * enemigos[i].dirx);
+                              prox_pos_enemigoy = enemigos[i].py - (enemigos[i].vel_pasos * enemigos[i].diry);
                               mov_enem_horizontal(i, prox_pos_enemigox);
                               mov_enem_vertical(i, prox_pos_enemigoy);
                               break;
@@ -678,19 +705,20 @@ void mover_enemigo()
             }
       }
 }
-void mov_enem_horizontal(int num_enem, int prox_posx)
+void mov_enem_horizontal(int i, int prox_pos_enemigox)
 {
-      if(mapa[prox_posx/40][enemigos[num_enem].py/40] != '1' && mapa[(prox_posx+40)/40][enemigos[num_enem].py/40] != '1' && mapa[prox_posx/40][(enemigos[num_enem].py+40)/40] != '1' && mapa[(prox_posx+40)/40][enemigos[num_enem].py/40] != '1')
+      if(mapa[(prox_pos_enemigox)/40][enemigos[i].py/40] != '1' && mapa[(prox_pos_enemigox+40)/40][enemigos[i].py/40] != '1' && mapa[(prox_pos_enemigox)/40][(enemigos[i].py+40)/40] != '1' && mapa[(prox_pos_enemigox+40)/40][(enemigos[i].py+40)/40] != '1')
       {
-            enemigos[num_enem].px -= enemigos[num_enem].vel_pasos * enemigos[num_enem].dirx;
+            enemigos[i].px -= enemigos[i].vel_pasos * enemigos[i].dirx;
       }
 }
-void mov_enem_vertical(int num_enem, int prox_posy)
+
+void mov_enem_vertical(int i, int prox_pos_enemigoy)
 {
-      if(mapa[enemigos[num_enem].px/40][prox_posy/40] != '1' && mapa[enemigos[num_enem].px/40][(prox_posy+40)/40] != '1'&& mapa[(enemigos[num_enem].px+40)/40][prox_posy/40] != '1' && mapa[(enemigos[num_enem].px+40)/40][(prox_posy+40)/40] != '1')
-      {
-            enemigos[num_enem].py -= enemigos[num_enem].vel_pasos * enemigos[num_enem].diry;
-      }
+       if(mapa[enemigos[i].px/40][(prox_pos_enemigoy)/40] != '1' && mapa[enemigos[i].px/40][(prox_pos_enemigoy+40)/40] != '1' && mapa[(enemigos[i].px+40)/40][(prox_pos_enemigoy)/40] != '1' && mapa[(enemigos[i].px+40)/40][(prox_pos_enemigoy+40)/40] != '1')
+       {
+             enemigos[i].py -= enemigos[i].vel_pasos * enemigos[i].diry;
+       }
 }
 
 int obtener_dir(int n)
