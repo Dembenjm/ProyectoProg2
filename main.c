@@ -119,9 +119,9 @@ int main()
       player.encendida=0;
       inicializar_allegro(ventana_w, ventana_h);
       crear_bitmaps();
+      generar_tipos_enemigos();
       cargar_imagenes();
       cargar_musica();
-
       //CICLO DEL JUEGO
       while (!key[KEY_ESC])//mientras la tecla que se presione sea distinta que esc se mantiene dentro del bucle y por lo tanto el juego se sigue ejecutando
       {
@@ -144,7 +144,6 @@ int main()
                         // {
                         //       play_midi(musica_2,1);
                         // }
-                        generar_tipos_enemigos();
                         importar_nivel(nivel);
                         pos_inicial_player();
                         mapa_importado=1;
@@ -168,10 +167,10 @@ int main()
 
                         indicador_bateria();
 
-                        if(cont%2==0)
-                        {
-                              mover_enemigo();
-                        }
+                        // if(cont%2==0)
+                        // {
+                        //       mover_enemigo();
+                        // }
 
                         blit(buffer,screen,0,0,0,0,SCREEN_W,SCREEN_H); //el buffer es dibujado en la pantalla
                         clear_bitmap(buffer);
@@ -351,42 +350,132 @@ void pintar_objetos(int estado_puerta)
                   if(mapa[i][j]=='6')//PUERTA
                   {
                         draw_sprite(buffer, piso, j*40, i*40);
-                        if(i == 0) //ARRIBA
+                        if(i==0)
                         {
-                              if(estado_puerta==0)//CERRADA
+                              if(estado_puerta==0) /*puerta cerrada*/
                               {
-                                    stretch_blit(puerta_bmp,puerta,0,0,40,40,0,0,40,40);
-                                    draw_sprite(buffer,puerta,j*40,i*40);
+                                    stretch_blit(puerta_bmp,puerta,40,0,40,40,0,0,40,40); 
+                                    draw_sprite(buffer,puerta,j*40,i*40); /*pinta puerta con dibujo desde abajo hacia arriba*/
                               }
-                              else if(estado_puerta==1)//ABIERTA
+                              else /*puerta abierta*/
                               {
-                                    stretch_blit(puerta_bmp,puerta,40,0,40,40,0,0,40,40);
-                                    draw_sprite(buffer,puerta,j*40,i*40);
+                                    stretch_blit(puerta_bmp,puerta,120,0,40,40,0,0,40,40);
+                                    draw_sprite(buffer,puerta,j*40,i*40);      
                               }
                         }
-                        else if(j == 0)
+                        else if(i==N-1)
                         {
-                              if(estado_puerta==0)//CERRADA
+                              if(estado_puerta==0)
                               {
-                                    stretch_blit(puerta_bmp,puerta,40,0,40,40,0,0,40,40);
+                                    stretch_blit(puerta_bmp,puerta,0,0,40,40,0,0,40,40); /*pinta puerta con dibujo desde arriba hacia abajo*/
                                     draw_sprite(buffer,puerta,j*40,i*40);
                               }
-                              else if(estado_puerta==1)//ABIERTA
+                              else
                               {
-                                    stretch_blit(puerta_bmp,puerta,0,0,40,40,0,0,40,40);
-                                    draw_sprite(buffer,puerta,j*40,i*40);
+                                    stretch_blit(puerta_bmp,puerta,120,0,40,40,0,0,40,40);
+                                    draw_sprite(buffer,puerta,j*40,i*40);      
                               }
                         }
-                        // else if(i==N)
+                        else if(j==0)
+                        {
+                              if(estado_puerta==0) /*puerta cerrada*/
+                              {
+                                    stretch_blit(puerta_bmp,puerta,120,0,40,40,0,0,40,40); 
+                                    draw_sprite(buffer,puerta,j*40,i*40); /*pinta puerta con dibujo desde derecha hacia izquierda*/
+                              }
+                              else /*puerta abierta*/
+                              {
+                                    stretch_blit(puerta_bmp,puerta,0,0,40,40,0,0,40,40);
+                                    draw_sprite(buffer,puerta,j*40,i*40);      
+                              }    
+                        }
+                        else if(j==M-2)
+                        {
+                              if(estado_puerta==0) /*puerta cerrada*/
+                              {
+                                    stretch_blit(puerta_bmp,puerta,80,0,40,40,0,0,40,40); 
+                                    draw_sprite(buffer,puerta,j*40,i*40); /*pinta puerta con dibujo desde derecha hacia izquierda*/
+                              }
+                              else /*puerta abierta*/
+                              {
+                                    stretch_blit(puerta_bmp,puerta,40,0,40,40,0,0,40,40);
+                                     draw_sprite(buffer,puerta,j*40,i*40);      
+                              }
+                        }
+                        // if(mapa[i][j+1]=='1') /*si el elemento que esta a la derecha es una pared*/
                         // {
-
+                        //       if(mapa[i+1][j]=='0') /*si el elemento que esta abajo es piso*/
+                        //       {
+                        //             if(estado_puerta==0) /*puerta cerrada*/
+                        //             {
+                        //                   stretch_blit(puerta_bmp,puerta,40,0,40,40,0,0,40,40); 
+                        //                   draw_sprite(buffer,puerta,j*40,i*40); /*pinta puerta con dibujo desde abajo hacia arriba*/
+                        //             }
+                        //             else /*puerta abierta*/
+                        //             {
+                        //                   stretch_blit(puerta_bmp,puerta,120,0,40,40,0,0,40,40);
+                        //                   draw_sprite(buffer,puerta,j*40,i*40);      
+                        //             }
+                        //       }
+                        //       else /*si el elemento que esta abajo no es piso*/
+                        //       {
+                        //             if(estado_puerta==0)
+                        //             {
+                        //                   stretch_blit(puerta_bmp,puerta,0,0,40,40,0,0,40,40); /*pinta puerta con dibujo desde arriba hacia abajo*/
+                        //                   draw_sprite(buffer,puerta,j*40,i*40);
+                        //             }
+                        //             else
+                        //             {
+                        //                   stretch_blit(puerta_bmp,puerta,120,0,40,40,0,0,40,40);
+                        //                   draw_sprite(buffer,puerta,j*40,i*40);      
+                        //             }
+                        //       }
                         // }
-                        // else if(j==M)
+                        // else /*si el elemento que esta a la derecha no es una pared*/
                         // {
-
+                        //       if(mapa[i][j+1]=='0') /*si el elemento que esta a la derecha es piso*/
+                        //       {
+                        //             if(estado_puerta==0) /*puerta cerrada*/
+                        //             {
+                        //                   stretch_blit(puerta_bmp,puerta,120,0,40,40,0,0,40,40); 
+                        //                   draw_sprite(buffer,puerta,j*40,i*40); /*pinta puerta con dibujo desde derecha hacia izquierda*/
+                        //             }
+                        //             else /*puerta abierta*/
+                        //             {
+                        //                   stretch_blit(puerta_bmp,puerta,40,0,40,40,0,0,40,40);
+                        //                   draw_sprite(buffer,puerta,j*40,i*40);      
+                        //             }
+                        //       } 
+                        //       else
+                        //       {
+                        //             if(estado_puerta==0) /*puerta cerrada*/
+                        //             {
+                        //                   stretch_blit(puerta_bmp,puerta,80,0,40,40,0,0,40,40); 
+                        //                   draw_sprite(buffer,puerta,j*40,i*40); /*pinta puerta con dibujo desde derecha hacia izquierda*/
+                        //             }
+                        //             else /*puerta abierta*/
+                        //             {
+                        //                   stretch_blit(puerta_bmp,puerta,40,0,40,40,0,0,40,40);
+                        //                   draw_sprite(buffer,puerta,j*40,i*40);      
+                        //             }
+                        //       }          
+                        }
+                        
+                        
+                        // if(i == 0) //ARRIBA
+                        // {
+                        //       if(estado_puerta==0)//CERRADA
+                        //       {
+                        //             stretch_blit(puerta_bmp,puerta,0,0,40,40,0,0,40,40);
+                        //             draw_sprite(buffer,puerta,j*40,i*40);
+                        //       }
+                        //       else if(estado_puerta==1)//ABIERTA
+                        //       {
+                        //             stretch_blit(puerta_bmp,puerta,40,0,40,40,0,0,40,40);
+                        //             draw_sprite(buffer,puerta,j*40,i*40);
+                        //       }
                         // }
-
-                  }
+                  
                   if(mapa[i][j]=='7')//PUERTA CERRADA CON COLISION
                   {
                         stretch_blit(puerta_bmp,puerta,160,0,40,40,0,0,40,40);
@@ -477,9 +566,7 @@ void mover_personaje(int estado_puerta)
             {
                   player.px=player.px+player.vel_pasos;
             }
-            else{}
-            }
-
+      }
       else if(key[KEY_A]) //movimiento hacia la IZQUIERDA cuando se presiona la tecla A
       {
             player.dir=1;
@@ -487,7 +574,6 @@ void mover_personaje(int estado_puerta)
             {
                   player.px=player.px-player.vel_pasos;
             }
-            else{}
       }
       else if(key[KEY_W]) //movimiento hacia ARRIBA cuando se presiona la tecla W
       {
@@ -506,7 +592,6 @@ void mover_personaje(int estado_puerta)
                         player.py=player.py-player.vel_pasos;
                   }
             }
-            else{}
       }
       else if(key[KEY_S]) //movimiento hacia ABAJO cuando se presiona la tecla S
       {
@@ -532,7 +617,6 @@ void mover_personaje(int estado_puerta)
                         player.py=player.py+player.vel_pasos;
                   }
             }
-            else{}
       }
 
       //APUNTAR A DISTINTAS DIRECCIONES
@@ -809,11 +893,14 @@ int detectar_puerta(int estado_puerta)
             {
                   if(mapa[i][j]=='6') //PUERTA
                   {
-                        if(mapa[(player.py-4)/40][player.px/40]=='6' && player.llave==1)//ABRE PUERTA
+                        if(player.llave==1)
                         {
-                              printf("estado_puerta=%d",estado_puerta);
-                              estado_puerta=1;
-                              player.llave=0;
+                              if(mapa[(player.py-4)/40][player.px/40]=='6' || mapa[(player.py-44)/40][player.px/40]=='6' || mapa[(player.py)/40][(player.px-4)/40]=='6' || mapa[(player.py)/40][(player.px+44)/40]=='6')//ABRE PUERTA
+                              {
+                                    printf("estado_puerta=%d",estado_puerta);
+                                    estado_puerta=1;
+                                    player.llave=0;
+                              }
                         }
                   }
             }
