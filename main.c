@@ -169,20 +169,23 @@ int main()
 
                         if(cont%2==0)
                         {
-                              mover_enemigo();
+                        //      mover_enemigo();
                         }
 
                         blit(buffer,screen,0,0,0,0,SCREEN_W,SCREEN_H); //el buffer es dibujado en la pantalla
                         clear_bitmap(buffer);
                         rest(5);
 
-                        if(mapa[(player.py+40)/40][player.px/40]=='6' && estado_puerta == 1)
+                        if(estado_puerta == 1)
                         {
-                              nivel++;
-                              mapa_importado=0;
-                             // enemigo.activado=0;
-                              player.llave=0;
-                              estado_puerta=0;
+                              if((mapa[(player.py+40)/40][player.px/40]=='2' && player.dir==0) || (mapa[player.py/40][(player.px+40)/40]=='2' && player.dir==1) || (mapa[player.py/40][player.px/40]=='2' && player.dir==3) || (mapa[player.py/40][player.px/40]=='2'&& player.dir==2))
+                              {
+                                    nivel++;
+                                    mapa_importado=0;
+                              // enemigo.activado=0;
+                                    player.llave=0;
+                                    estado_puerta=0;
+                              }
                         }
                   }
             }
@@ -347,7 +350,7 @@ void pintar_objetos(int estado_puerta)
                         stretch_blit(llave_bmp,llave,0,0,300,300,0,0,40,40);
                         draw_sprite(buffer, llave, j*40, i*40);
                   }
-                  if(mapa[i][j]=='6')//PUERTA
+                  if(mapa[i][j]=='2')//PUERTA
                   {
                         draw_sprite(buffer, piso, j*40, i*40);
                         if(i==0)
@@ -402,84 +405,31 @@ void pintar_objetos(int estado_puerta)
                                      draw_sprite(buffer,puerta,j*40,i*40);
                               }
                         }
-                        // if(mapa[i][j+1]=='1') /*si el elemento que esta a la derecha es una pared*/
-                        // {
-                        //       if(mapa[i+1][j]=='0') /*si el elemento que esta abajo es piso*/
-                        //       {
-                        //             if(estado_puerta==0) /*puerta cerrada*/
-                        //             {
-                        //                   stretch_blit(puerta_bmp,puerta,40,0,40,40,0,0,40,40);
-                        //                   draw_sprite(buffer,puerta,j*40,i*40); /*pinta puerta con dibujo desde abajo hacia arriba*/
-                        //             }
-                        //             else /*puerta abierta*/
-                        //             {
-                        //                   stretch_blit(puerta_bmp,puerta,120,0,40,40,0,0,40,40);
-                        //                   draw_sprite(buffer,puerta,j*40,i*40);
-                        //             }
-                        //       }
-                        //       else /*si el elemento que esta abajo no es piso*/
-                        //       {
-                        //             if(estado_puerta==0)
-                        //             {
-                        //                   stretch_blit(puerta_bmp,puerta,0,0,40,40,0,0,40,40); /*pinta puerta con dibujo desde arriba hacia abajo*/
-                        //                   draw_sprite(buffer,puerta,j*40,i*40);
-                        //             }
-                        //             else
-                        //             {
-                        //                   stretch_blit(puerta_bmp,puerta,120,0,40,40,0,0,40,40);
-                        //                   draw_sprite(buffer,puerta,j*40,i*40);
-                        //             }
-                        //       }
-                        // }
-                        // else /*si el elemento que esta a la derecha no es una pared*/
-                        // {
-                        //       if(mapa[i][j+1]=='0') /*si el elemento que esta a la derecha es piso*/
-                        //       {
-                        //             if(estado_puerta==0) /*puerta cerrada*/
-                        //             {
-                        //                   stretch_blit(puerta_bmp,puerta,120,0,40,40,0,0,40,40);
-                        //                   draw_sprite(buffer,puerta,j*40,i*40); /*pinta puerta con dibujo desde derecha hacia izquierda*/
-                        //             }
-                        //             else /*puerta abierta*/
-                        //             {
-                        //                   stretch_blit(puerta_bmp,puerta,40,0,40,40,0,0,40,40);
-                        //                   draw_sprite(buffer,puerta,j*40,i*40);
-                        //             }
-                        //       }
-                        //       else
-                        //       {
-                        //             if(estado_puerta==0) /*puerta cerrada*/
-                        //             {
-                        //                   stretch_blit(puerta_bmp,puerta,80,0,40,40,0,0,40,40);
-                        //                   draw_sprite(buffer,puerta,j*40,i*40); /*pinta puerta con dibujo desde derecha hacia izquierda*/
-                        //             }
-                        //             else /*puerta abierta*/
-                        //             {
-                        //                   stretch_blit(puerta_bmp,puerta,40,0,40,40,0,0,40,40);
-                        //                   draw_sprite(buffer,puerta,j*40,i*40);
-                        //             }
-                        //       }
-                        }
-
-
-                        // if(i == 0) //ARRIBA
-                        // {
-                        //       if(estado_puerta==0)//CERRADA
-                        //       {
-                        //             stretch_blit(puerta_bmp,puerta,0,0,40,40,0,0,40,40);
-                        //             draw_sprite(buffer,puerta,j*40,i*40);
-                        //       }
-                        //       else if(estado_puerta==1)//ABIERTA
-                        //       {
-                        //             stretch_blit(puerta_bmp,puerta,40,0,40,40,0,0,40,40);
-                        //             draw_sprite(buffer,puerta,j*40,i*40);
-                        //       }
-                        // }
-
-                  if(mapa[i][j]=='7')//PUERTA CERRADA CON COLISION
+                  }
+                  if(mapa[i][j]=='3')//PUERTA CERRADA CON COLISION
                   {
-                        stretch_blit(puerta_bmp,puerta,160,0,40,40,0,0,40,40);
-                        draw_sprite(buffer,puerta,j*40,i*40);
+                        draw_sprite(buffer, piso, j*40, i*40);
+                        if(i==0)
+                        {
+                              stretch_blit(puerta_bmp,puerta,40,0,40,40,0,0,40,40);
+                              draw_sprite(buffer,puerta,j*40,i*40); /*pinta puerta con dibujo desde abajo hacia arriba*/
+                        }
+                        else if(i==N-1)
+                        {
+                              stretch_blit(puerta_bmp,puerta,0,0,40,40,0,0,40,40); /*pinta puerta con dibujo desde arriba hacia abajo*/
+                              draw_sprite(buffer,puerta,j*40,i*40);
+                        }
+                        else if(j==0)
+                        {
+                              stretch_blit(puerta_bmp,puerta,120,0,40,40,0,0,40,40);
+                              draw_sprite(buffer,puerta,j*40,i*40); /*pinta puerta con dibujo desde derecha hacia izquierda*/
+
+                        }
+                        else if(j==M-2)
+                        {
+                              stretch_blit(puerta_bmp,puerta,80,0,40,40,0,0,40,40);
+                              draw_sprite(buffer,puerta,j*40,i*40); /*pinta puerta con dibujo desde derecha hacia izquierda*/
+                        }
                   }
             }
       }
@@ -562,11 +512,11 @@ void mover_personaje(int estado_puerta)
       if(key[KEY_D]) //movimiento hacia la DERECHA cuando se presiona la tecla D
       {
             player.dir=3;
-            if(mapa[(player.py+8)/40][(player.px+44)/40] != '1' && mapa[(player.py+32)/40][(player.px+44)/40] != '1' && mapa[(player.py+4)/40][(player.px+44)/40]!='6' && mapa[(player.py+36)/40][(player.px+44)/40]!='6') //si la posici�n del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
+            if(mapa[(player.py+8)/40][(player.px+44)/40] != '1' && mapa[(player.py+32)/40][(player.px+44)/40] != '1' && mapa[(player.py+4)/40][(player.px+44)/40]!='2' && mapa[(player.py+36)/40][(player.px+44)/40]!='2'&& mapa[(player.py+4)/40][(player.px+44)/40]!='3' && mapa[(player.py+36)/40][(player.px+44)/40]!='3') //si la posici�n del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
             {
                   player.px=player.px+player.vel_pasos;
             }
-            else if(mapa[(player.py+4)/40][(player.px+44)/40]=='6' && mapa[(player.py+36)/40][(player.px+44)/40]=='6' && estado_puerta==1)
+            else if(mapa[(player.py+4)/40][(player.px+44)/40]=='2' && mapa[(player.py+36)/40][(player.px+44)/40]=='2' && estado_puerta==1)
             {
                   player.px=player.px+player.vel_pasos;
             }
@@ -574,11 +524,11 @@ void mover_personaje(int estado_puerta)
       else if(key[KEY_A]) //movimiento hacia la IZQUIERDA cuando se presiona la tecla A
       {
             player.dir=1;
-            if(mapa[(player.py+8)/40][(player.px-4)/40] != '1' && mapa[(player.py+32)/40][(player.px-4)/40] != '1' && mapa[(player.py+4)/40][(player.px-4)/40]!='6' && mapa[(player.py+36)/40][(player.px-4)/40]!='6') //si la posici�n del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
+            if(mapa[(player.py+8)/40][(player.px-4)/40] != '1' && mapa[(player.py+32)/40][(player.px-4)/40] != '1' && mapa[(player.py+4)/40][(player.px-4)/40]!='2' && mapa[(player.py+36)/40][(player.px-4)/40]!='2' && mapa[(player.py+4)/40][(player.px-4)/40]!='3' && mapa[(player.py+36)/40][(player.px-4)/40]!='3') //si la posici�n del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
             {
                   player.px=player.px-player.vel_pasos;
             }
-            else if(mapa[(player.py+4)/40][(player.px-4)/40]=='6' && mapa[(player.py+36)/40][(player.px-4)/40]=='6' && estado_puerta==1)
+            else if(mapa[(player.py+4)/40][(player.px-4)/40]=='2' && mapa[(player.py+36)/40][(player.px-4)/40]=='2' && estado_puerta==1)
             {
                   player.px=player.px-player.vel_pasos;
             }
@@ -586,28 +536,27 @@ void mover_personaje(int estado_puerta)
       else if(key[KEY_W]) //movimiento hacia ARRIBA cuando se presiona la tecla W
       {
             player.dir=0;
-            if(mapa[(player.py-4)/40][(player.px+10)/40]!='1' && mapa[(player.py-4)/40][(player.px+30)/40]!='1' && mapa[(player.py-4)/40][player.px/40]!='6' && mapa[(player.py-4)/40][(player.px+30)/40]!='6') //si la posici�n del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
+            if(mapa[(player.py-4)/40][(player.px+10)/40]!='1' && mapa[(player.py-4)/40][(player.px+30)/40]!='1' && mapa[(player.py-4)/40][player.px/40]!='2' && mapa[(player.py-4)/40][(player.px+30)/40]!='2' && mapa[(player.py-4)/40][player.px/40]!='3' && mapa[(player.py-4)/40][(player.px+30)/40]!='3') //si la posici�n del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
             {
                   player.py=player.py-player.vel_pasos;
             }
-            else if(mapa[(player.py-4)/40][player.px/40]=='6' && mapa[(player.py-4)/40][(player.px+30)/40]=='6' && estado_puerta==1)
+            else if(mapa[(player.py-4)/40][player.px/40]=='2' && mapa[(player.py-4)/40][(player.px+30)/40]=='2' && estado_puerta==1)
             {
-                  player.px=player.px-player.vel_pasos;
+                  player.py=player.py-player.vel_pasos;
             }
       }
       else if(key[KEY_S]) //movimiento hacia ABAJO cuando se presiona la tecla S
       {
             player.dir=2;
-            if(mapa[(player.py+44)/40][(player.px+4)/40]!='1' && mapa[(player.py+44)/40][(player.px+30)/40]!='1' && mapa[(player.py+44)/40][player.px/40]!='6' && mapa[(player.py+44)/40][(player.px+30)/40]!='6') //si la posici�n del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
+            if(mapa[(player.py+44)/40][(player.px+4)/40]!='1' && mapa[(player.py+44)/40][(player.px+30)/40]!='1' && mapa[(player.py+44)/40][player.px/40]!='2' && mapa[(player.py+44)/40][(player.px+30)/40]!='2'&& mapa[(player.py+44)/40][player.px/40]!='3' && mapa[(player.py+44)/40][(player.px+30)/40]!='3') //si la posici�n del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
             {
                   player.py=player.py+player.vel_pasos;
             }
-            else if(mapa[(player.py+44)/40][player.px/40]=='6' && mapa[(player.py+44)/40][(player.px+30)/40]=='6' && estado_puerta==1)
+            else if(mapa[(player.py+44)/40][player.px/40]=='2' && mapa[(player.py+44)/40][(player.px+30)/40]=='2' && estado_puerta==1)
             {
                   player.py=player.py+player.vel_pasos;
             }
       }
-
       //APUNTAR A DISTINTAS DIRECCIONES
       if(key[KEY_RIGHT])
       {
@@ -638,19 +587,6 @@ void generar_tipos_enemigos()
       }
 }
 
-// void colision_enemigo0()
-// {
-//       int i;
-//       srand(time(NULL));
-//       for(i=0; i<MAXENEMIGOS; i++)
-//       {
-//             if(enemigos[i].tipo==0)
-//             {
-//                   enemigos[i].dir=rand()%2;
-//             }
-//       }
-// }
-
 void dibujar_enemigo()
 {
       int i;
@@ -668,7 +604,6 @@ void dibujar_enemigo()
                         stretch_blit(enemigos[i].enemigobmp, enemigos[i].enemigo, enemigos[i].dir*300,0,300,300,0,0,40,40);
                         draw_sprite(buffer, enemigos[i].enemigo,enemigos[i].px,enemigos[i].py);
                   }
-
             }
       }
 }
@@ -880,11 +815,11 @@ int detectar_puerta(int estado_puerta)
       {
             for(j=0;j<M;j++)
             {
-                  if(mapa[i][j]=='6') //PUERTA
+                  if(mapa[i][j]=='2') //PUERTA
                   {
                         if(player.llave==1)
                         {
-                              if(mapa[(player.py-4)/40][player.px/40]=='6' || mapa[(player.py-44)/40][player.px/40]=='6' || mapa[(player.py)/40][(player.px-4)/40]=='6' || mapa[(player.py)/40][(player.px+44)/40]=='6')//ABRE PUERTA
+                              if(mapa[(player.py-4)/40][player.px/40]=='2' || mapa[(player.py+44)/40][player.px/40]=='2' || mapa[(player.py)/40][(player.px-4)/40]=='2' || mapa[(player.py)/40][(player.px+44)/40]=='2')//ABRE PUERTA
                               {
                                     printf("estado_puerta=%d",estado_puerta);
                                     estado_puerta=1;
