@@ -1,6 +1,3 @@
-//TIPO 1: Se mueve para todas las direcciones hacia el enemigo
-//TIPO 2; Se mueve para todas las direcciones (sin colisiones)
-//DARLE MAS OBSTACULOS O DINAMISMO (PORTALES)
 //CREAR MENU DEL JUEGO
 
 #include <stdio.h>
@@ -14,6 +11,7 @@
 #define L 11
 #define MAXBATERIAS 5
 #define MAXENEMIGOS 4
+#define MAXVIDAS 3
 
 struct personaje
 {
@@ -43,13 +41,8 @@ struct enemigo
       BITMAP *enemigo;
 }enemigos[MAXENEMIGOS]; //tipo de enemigo agregar
 
-struct indicador
-{
-      BITMAP *carga;
-      BITMAP *cargabmp;
-}carga;
-
 int inicializar_allegro(int ventana_w, int ventana_h);
+void elegir_fondo(int nivel);
 int detectar_baterias(int cont_baterias);
 int detector_enemigos();
 int usar_linterna(int cont_baterias);
@@ -64,19 +57,20 @@ void efectos_sonido(int n_efx);
 void agarrar_objeto(char obj);
 void mov_enem_horizontal(int i, int prox_pos_enemigox);
 void mov_enem_vertical(int i, int prox_pos_enemigoy);
-void detect_col_enemigo_player(int i);
+int detect_col_enemigo_player(int i);
 int detec_punto_espacio(int planoX1,int planoX2,int planoY1, int planoY2, int puntoX, int puntoY);
 void mover_personaje();
 void generar_tipos_enemigos();
 void mover_enemigo();
 void cargar_bitmaps();
-void pintar_fondo();
+void pintar_fondo(int ventana_w, int ventana_h);
 void pintar_objetos(int estado_puerta);
 void dibujar_personaje();
 void dibujar_enemigo();
-void indicador_bateria();
+void indicador_bateria(int cont_baterias);
+void indicador_vida();
 void destruir_bitmaps();
-void crear_bitmaps();
+void crear_bitmaps(int ventana_w, int ventana_h);
 void cargar_imagenes();
 void cargar_musica();
 void pos_inicial_player();
@@ -95,6 +89,21 @@ BITMAP *llave;
 BITMAP *llave_bmp;
 BITMAP *puerta;
 BITMAP *puerta_bmp;
+BITMAP *vida;
+BITMAP *vida_bmp;
+BITMAP *indicador_bateria_bmp;
+BITMAP *indicador_bateria_img;
+BITMAP *pared_izq;
+BITMAP *pared_der;
+BITMAP *pared_arr;
+BITMAP *pared_abj;
+BITMAP *pared_hor;
+BITMAP *pared_ver_der;
+BITMAP *pared_ver_izq;
+BITMAP *pared_sup_izq;
+BITMAP *pared_sup_der;
+BITMAP *pared_inf_izq;
+BITMAP *pared_inf_der;
 MIDI *musica_1;
 MIDI *musica_2;
 
@@ -114,11 +123,11 @@ int main()
       int nivel=0;
 
       //INICIALIZACION DE VARIABLES
-      player.vida=1;
+      player.vida=2;
       player.llave=0;
       player.encendida=0;
       inicializar_allegro(ventana_w, ventana_h);
-      crear_bitmaps();
+      crear_bitmaps(ventana_w, ventana_h);
       generar_tipos_enemigos();
       cargar_imagenes();
       cargar_musica();
@@ -145,12 +154,13 @@ int main()
                         //       play_midi(musica_2,1);
                         // }
                         importar_nivel(nivel);
+                        elegir_fondo(nivel);
                         pos_inicial_player();
                         mapa_importado=1;
                   }
                   else
                   {
-                        pintar_fondo();
+                        pintar_fondo(ventana_w,ventana_h);
                         pintar_objetos(estado_puerta);
                         dibujar_personaje();
                         mover_personaje();
@@ -165,16 +175,20 @@ int main()
                               cont_baterias = usar_linterna(cont_baterias);
                         }
 
-                        indicador_bateria();
+                        indicador_bateria(cont_baterias);
+                        indicador_vida();
 
                         if(cont%2==0)
                         {
-                        //      mover_enemigo();
+                              mover_enemigo();
                         }
-
+                        if(player.vida==0)
+                        {
+                              printf("MUERTO\n");
+                        }
                         blit(buffer,screen,0,0,0,0,SCREEN_W,SCREEN_H); //el buffer es dibujado en la pantalla
                         clear_bitmap(buffer);
-                        rest(5);
+                        rest(10);
 
                         if(estado_puerta == 1)
                         {
@@ -209,17 +223,47 @@ int inicializar_allegro(int ventana_w, int ventana_h)
       return 0;
 }
 
+void crear_bitmaps(int ventana_w, int ventana_h)
+{
+      int i;
+      buffer=create_bitmap(SCREEN_W,SCREEN_H);//el buffer es creado con el ancho y alto de la pantalla
+      fondo=create_bitmap(ventana_w, ventana_h);
+      player.personaje=create_bitmap(40,40);
+      luz=create_bitmap(40,120);
+      bateria=create_bitmap(120,40);
+      vida=create_bitmap(120,40);
+      llave=create_bitmap(40,40);
+      puerta=create_bitmap(40,40);
+      indicador_bateria_bmp=create_bitmap(120,40);
+      for(i=0;i<MAXENEMIGOS;i++)
+      {
+            enemigos[i].enemigo=create_bitmap(40,40);
+      }
+}
+
 void cargar_imagenes()
 {
       int i;
-      pared=load_bitmap("recursos/imagenes/pared.bmp",NULL);
+      pared_der=load_bitmap("recursos/imagenes/pared_der.bmp",NULL);
+      pared_izq=load_bitmap("recursos/imagenes/pared_izq.bmp",NULL);
+      pared_arr=load_bitmap("recursos/imagenes/pared_arr.bmp",NULL);
+      pared_abj=load_bitmap("recursos/imagenes/pared_abj.bmp",NULL);
+      pared_sup_izq=load_bitmap("recursos/imagenes/pared_sup_izq.bmp",NULL);
+      pared_sup_der=load_bitmap("recursos/imagenes/pared_sup_der.bmp",NULL);
+      pared_inf_izq=load_bitmap("recursos/imagenes/pared_inf_izq.bmp",NULL);
+      pared_inf_der=load_bitmap("recursos/imagenes/pared_inf_der.bmp",NULL);
+      pared_hor=load_bitmap("recursos/imagenes/pared_hor.bmp",NULL);
+      pared_ver_izq=load_bitmap("recursos/imagenes/pared_ver_izq.bmp",NULL);
+      pared_ver_der=load_bitmap("recursos/imagenes/pared_ver_der.bmp",NULL);
+      pared = load_bitmap("recursos/imagenes/pared.bmp",NULL);
       piso=load_bitmap("recursos/imagenes/piso.bmp",NULL);
       bateria_bmp=load_bitmap("recursos/imagenes/bateria.bmp",NULL);
       player.personajebmp=load_bitmap("recursos/imagenes/personaje.bmp",NULL);
       luz_bmp=load_bitmap("recursos/imagenes/luz.bmp",NULL);
-      carga.cargabmp=load_bitmap("recursos/imagenes/cargabmp.bmp",NULL);
       llave_bmp=load_bitmap("recursos/imagenes/llave.bmp",NULL);
       puerta_bmp=load_bitmap("recursos/imagenes/puerta.bmp",NULL);
+      vida_bmp=load_bitmap("recursos/imagenes/indicador_vida.bmp",NULL);
+      indicador_bateria_img=load_bitmap("recursos/imagenes/indicador_bateria.bmp",NULL);
       for(i=0;i<MAXENEMIGOS;i++)
       {
             if(enemigos[i].tipo == 0)
@@ -238,21 +282,6 @@ void cargar_musica()
 {
       musica_1 = load_midi("recursos/musica/musica_1.mid");
       musica_2 = load_midi("recursos/musica/musica_2.mid");
-}
-
-void crear_bitmaps()
-{
-      int i;
-      buffer=create_bitmap(SCREEN_W,SCREEN_H);//el buffer es creado con el ancho y alto de la pantalla
-      player.personaje=create_bitmap(40,40);
-      luz=create_bitmap(40,120);
-      carga.carga=create_bitmap(120,40);
-      llave=create_bitmap(40,40);
-      puerta=create_bitmap(40,40);
-      for(i=0;i<MAXENEMIGOS;i++)
-      {
-            enemigos[i].enemigo=create_bitmap(40,40);
-      }
 }
 
 void importar_nivel(int nvl)
@@ -297,20 +326,81 @@ void leer_archivo(char *nombre_archivo)
       fclose(fdata);
 }
 
-void pintar_fondo()
+void elegir_fondo(int nivel)
+{
+      switch (nivel)
+      {
+      case 1:
+            fondo = load_bitmap("recursos/imagenes/fondo1.bmp",NULL);
+            break;
+      case 2:
+            fondo = load_bitmap("recursos/imagenes/fondo2.bmp",NULL);
+            break;
+      }
+
+}
+
+void pintar_fondo(int ventana_w, int ventana_h)
 {
       int i , j;
+      blit(fondo, buffer, 0, 0, 0, 0, ventana_w, ventana_h);
       for(i=0;i<N;i++)
       {
             for(j=0;j<M;j++)
             {
-                  if(mapa[i][j]=='0')//PISO
+                  if(mapa[i][j]=='1')//PARED ABAJO,ARRIBA,DERECHA,IZQUIERDA
                   {
-                        draw_sprite(buffer, piso, j*40, i*40);
+                        if(i==0)
+                        {
+                              draw_sprite(buffer,pared_abj,j*40,i*40); 
+                        }
+                        else if(i==N-1)
+                        {
+                              draw_sprite(buffer,pared_arr,j*40,i*40);
+                        }
+                        else if(j==0)
+                        {
+                              draw_sprite(buffer,pared_der,j*40,i*40); 
+                        }
+                        else if(j==M-2)
+                        {
+                              draw_sprite(buffer,pared_izq,j*40,i*40); 
+                        }
+                        else
+                        {
+                              draw_sprite(buffer,pared_hor,j*40,i*40);
+                        }
                   }
-                  if(mapa[i][j]=='1')//PARED
+                  if(mapa[i][j]=='4') //PARED ESQUINAS
                   {
-                        draw_sprite(buffer, pared, j*40, i*40);
+                        if(i==0 && j==0)
+                        {
+                              draw_sprite(buffer,pared_sup_izq,j*40,i*40);
+                        }
+                        else if(i==0 && j==M-2)
+                        {
+                              draw_sprite(buffer,pared_sup_der,j*40,i*40);
+                        }
+                        else if(i==N-1 && j==0)
+                        {
+                              draw_sprite(buffer,pared_inf_izq,j*40,i*40);
+                        }
+                        else if(i==N-1 && j==M-2)
+                        {
+                              draw_sprite(buffer,pared_inf_der,j*40,i*40);
+                        }
+                  }
+                  if(mapa[i][j]=='5') //PARED HORIZONTAL, VERTICAL, CON TRANSPARENCIA
+                  {
+                        draw_sprite(buffer,pared_ver_izq,j*40,i*40);
+                  }
+                  if(mapa[i][j]=='6') //PARED HORIZONTAL, VERTICAL, CON TRANSPARENCIA
+                  {
+                        draw_sprite(buffer,pared_ver_der,j*40,i*40);
+                  }
+                  if(mapa[i][j]=='7') //PARED HORIZONTAL, VERTICAL, CON TRANSPARENCIA
+                  {
+                        draw_sprite(buffer,pared_hor,j*40,i*40);
                   }
             }
       }
@@ -325,12 +415,12 @@ void pintar_objetos(int estado_puerta)
             {
                   if(mapa[i][j]=='B')//BATERIA
                   {
-                        draw_sprite(buffer, piso, j*40, i*40);
+                        //draw_sprite(buffer, piso, j*40, i*40);
                         draw_sprite(buffer, bateria_bmp, j*40, i*40);
                   }
                   if(mapa[i][j]=='D')//PISO DETECTOR
                   {
-                        draw_sprite(buffer, piso, j*40, i*40);
+                        //draw_sprite(buffer, piso, j*40, i*40);
                   }
                   if(mapa[i][j]=='E')//ENEMIGO
                   {
@@ -342,17 +432,17 @@ void pintar_objetos(int estado_puerta)
                               mapa[i][j]='0';
                               cont_enemigo++;
                         }
-                        draw_sprite(buffer, piso, j*40, i*40);
+                        //draw_sprite(buffer, piso, j*40, i*40);
                   }
                   if(mapa[i][j]=='L')//LLAVE
                   {
-                        draw_sprite(buffer, piso, j*40, i*40);
+                        //draw_sprite(buffer, piso, j*40, i*40);
                         stretch_blit(llave_bmp,llave,0,0,300,300,0,0,40,40);
                         draw_sprite(buffer, llave, j*40, i*40);
                   }
                   if(mapa[i][j]=='2')//PUERTA
                   {
-                        draw_sprite(buffer, piso, j*40, i*40);
+                       // draw_sprite(buffer, piso, j*40, i*40);
                         if(i==0)
                         {
                               if(estado_puerta==0) /*puerta cerrada*/
@@ -476,7 +566,6 @@ void dibujar_personaje()
                   if(tiempo_luz!=0)//LINTERNA ENCENDIDA
                   {
                         tiempo_luz=tiempo_luz-1;
-                        //printf("tiempo_luz=%d",tiempo_luz);
                         if(player.dir==0) //ARRIBA
                         {
                               triangle(buffer, player.px, player.py-120, player.px+20, player.py, player.px+40, player.py-120,makeacol(255,255,0,0));
@@ -512,7 +601,7 @@ void mover_personaje(int estado_puerta)
       if(key[KEY_D]) //movimiento hacia la DERECHA cuando se presiona la tecla D
       {
             player.dir=3;
-            if(mapa[(player.py+8)/40][(player.px+44)/40] != '1' && mapa[(player.py+32)/40][(player.px+44)/40] != '1' && mapa[(player.py+4)/40][(player.px+44)/40]!='2' && mapa[(player.py+36)/40][(player.px+44)/40]!='2'&& mapa[(player.py+4)/40][(player.px+44)/40]!='3' && mapa[(player.py+36)/40][(player.px+44)/40]!='3') //si la posici�n del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
+            if(mapa[(player.py+8)/40][(player.px+44)/40] != '1' && mapa[(player.py+32)/40][(player.px+44)/40] != '1' && mapa[(player.py+4)/40][(player.px+44)/40]!='2' && mapa[(player.py+36)/40][(player.px+44)/40]!='2'&& mapa[(player.py+4)/40][(player.px+44)/40]!='3' && mapa[(player.py+36)/40][(player.px+44)/40]!='3'&& mapa[(player.py+8)/40][(player.px+44)/40] != '6' && mapa[(player.py+32)/40][(player.px+44)/40] != '6') //si la posici�n del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
             {
                   player.px=player.px+player.vel_pasos;
             }
@@ -713,7 +802,7 @@ void mover_enemigo()
       }
 }
 
-void detect_col_enemigo_player(int i)
+int detect_col_enemigo_player(int i)
 {
       int enemigo_x1,enemigo_x2,enemigo_y1,enemigo_y2,diferencia_x,diferencia_y;
       diferencia_x = 10;
@@ -724,8 +813,10 @@ void detect_col_enemigo_player(int i)
       enemigo_y2 = enemigos[i].py+40+diferencia_y;
       if(detec_punto_espacio(enemigo_x1,enemigo_x2,enemigo_y1,enemigo_y2,player.px,player.py) || detec_punto_espacio(enemigo_x1,enemigo_x2,enemigo_y1,enemigo_y2,player.px+40,player.py) || detec_punto_espacio(enemigo_x1,enemigo_x2,enemigo_y1,enemigo_y2,player.px,player.py+40) || detec_punto_espacio(enemigo_x1,enemigo_x2,enemigo_y1,enemigo_y2,player.px+40,player.py+40))
       {
-            player.vida=0;
-            printf("MUERTO");
+            if(player.vida>0)
+            {
+                  player.vida=player.vida - 1;
+            }
       }
 }
 
@@ -892,15 +983,58 @@ void detectar_llaves()
 
 void indicador_bateria(int cont_baterias)
 {
-      if(cont_baterias < MAXBATERIAS)
+      int pos_x=180;
+      int pos_y=0;
+      switch (cont_baterias)
       {
-            stretch_blit(carga.cargabmp,carga.carga,120*cont_baterias,0,720,40,0,0,720,40);
-            draw_sprite(buffer,carga.carga,670,10);
+      case 0:
+            stretch_blit(indicador_bateria_img,indicador_bateria_bmp,0,0,720,40,0,0,720,40);
+            draw_sprite(buffer,indicador_bateria_bmp,pos_x,pos_y);
+            break;
+      case 1:
+            stretch_blit(indicador_bateria_img,indicador_bateria_bmp,120,0,720,40,0,0,720,40);
+            draw_sprite(buffer,indicador_bateria_bmp,pos_x,pos_y);
+            break;
+      case 2:
+            stretch_blit(indicador_bateria_img,indicador_bateria_bmp,240,0,720,40,0,0,720,40);
+            draw_sprite(buffer,indicador_bateria_bmp,pos_x,pos_y);
+            break;
+      case 3:
+            stretch_blit(indicador_bateria_img,indicador_bateria_bmp,360,0,720,40,0,0,720,40);
+            draw_sprite(buffer,indicador_bateria_bmp,pos_x,pos_y);
+            break;
+      case 4:
+            stretch_blit(indicador_bateria_img,indicador_bateria_bmp,480,0,720,40,0,0,720,40);
+            draw_sprite(buffer,indicador_bateria_bmp,pos_x,pos_y);
+            break;
+      case 5:
+            stretch_blit(indicador_bateria_img,indicador_bateria_bmp,600,0,720,40,0,0,720,40);
+            draw_sprite(buffer,indicador_bateria_bmp,pos_x,pos_y);
+            break;
       }
-      else
+}
+void indicador_vida()
+{
+      int pos_x=40;
+      int pos_y=0;
+      switch (player.vida)
       {
-            stretch_blit(carga.cargabmp,carga.carga,120*MAXBATERIAS,0,720,40,0,0,720,40);
-            draw_sprite(buffer,carga.carga,670,10);
+      case 0:
+            stretch_blit(vida_bmp,vida,0,0,360,40,0,0,360,40);
+            draw_sprite(buffer,vida,pos_x,pos_y);
+            break;
+      case 1:
+            stretch_blit(vida_bmp,vida,120,0,360,40,0,0,360,40);
+            draw_sprite(buffer,vida,pos_x,pos_y);
+            break;
+      case 2:
+            stretch_blit(vida_bmp,vida,240,0,360,40,0,0,360,40);
+            draw_sprite(buffer,vida,pos_x,pos_y);
+            break;
+      case 3:
+            stretch_blit(vida_bmp,vida,360,0,360,40,0,0,360,40);
+            draw_sprite(buffer,vida,pos_x,pos_y);
+            break;
       }
 }
 
