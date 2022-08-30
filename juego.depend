@@ -8,6 +8,7 @@
 	<time.h>
 
 1661829478 source:c:\users\demian\desktop\proyecto\gitproyectoprog2\main.c
+<<<<<<< HEAD
 	<stdio.h>
 	<string.h>
 	<stdbool.h>
@@ -24,6 +25,8 @@
 	<time.h>
 
 1661866893 source:c:\users\demian\desktop\proyecto\gitproyectoprog2 - 7\main.c
+=======
+>>>>>>> a603ce576a87c0dc2045138cdf8dfa6922d4384f
 	<stdio.h>
 	<string.h>
 	<stdbool.h>

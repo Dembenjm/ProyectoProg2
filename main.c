@@ -131,8 +131,15 @@ int main()
       int estado_puerta=0;
       int mapa_importado=0;
       int nivel=0;
+<<<<<<< HEAD
       int tiempo_juego = 0;
       int salir = 0;
+=======
+    //  int max_nivel=4;
+      int tiempo_juego;
+
+
+>>>>>>> a603ce576a87c0dc2045138cdf8dfa6922d4384f
 
       //INICIALIZACION DE VARIABLES
       player.vida=MAX_VIDAS;
@@ -144,24 +151,89 @@ int main()
       cargar_imagenes();
       cargar_musica();
       //CICLO DEL JUEGO
+<<<<<<< HEAD
       while (!key[KEY_ESC] && salir != 1)//mientras la tecla que se presione sea distinta que esc se mantiene dentro del bucle y por lo tanto el juego se sigue ejecutando
+=======
+      while (!key[KEY_ESC] || player.vida == 0)//mientras la tecla que se presione sea distinta que esc se mantiene dentro del bucle y por lo tanto el juego se sigue ejecutando
+>>>>>>> a603ce576a87c0dc2045138cdf8dfa6922d4384f
       {
             while(player.vida != 0)
             {
                   if(nivel==0)
                   {
+<<<<<<< HEAD
                         blit(menu,screen,0,0,0,0,ventana_w,ventana_h);
                         if(key[KEY_ENTER])
                         {
                               nivel=1;
                               tiempo_juego=0;
                         }
+=======
+                        nivel=1;
+                        tiempo_juego=0;
+                        // if(nivel == max_nivel)
+                        // {
+                        //       guardar_ranking(tiempo_juego);
+                        // }
+                  }
+            }
+            else
+            {
+                  if(mapa_importado == 0)
+                  {
+                        // if(nivel==1)
+                        // {
+                        //       play_midi(musica_1,1);
+                        // }
+                        // else if(nivel==2)
+                        // {
+                        //       play_midi(musica_2,1);
+                        // }
+                        // if(nivel == max_nivel)
+                        // {
+                        //       guardar_ranking(tiempo_juego);
+                        // }
+                        importar_nivel(nivel);
+                        //elegir_fondo(nivel);
+                        pos_inicial_player();
+                        mapa_importado=1;
+>>>>>>> a603ce576a87c0dc2045138cdf8dfa6922d4384f
                   }
                   else
                   {
                         if(mapa_importado == 0)
                         {
+<<<<<<< HEAD
                               if(nivel==1)
+=======
+                              cont_baterias = usar_linterna(cont_baterias);
+                        }
+
+                        indicador_bateria(cont_baterias);
+                        indicador_vida();
+
+                        if(tiempo_dano>0)
+                        {
+                              tiempo_dano--;
+                        }
+
+                        if(cont%2==0)
+                        {
+                              mover_enemigo();
+                        }
+                        if(player.vida==0)
+                        {
+                              printf("MUERTO\n");
+                        }
+                        textprintf(buffer, font,320,15,255,"%d",tiempo_juego/60);
+                        tiempo_juego++;
+                        blit(buffer,screen,0,0,0,0,SCREEN_W,SCREEN_H); //el buffer es dibujado en la pantalla
+                        clear_bitmap(buffer);
+                        rest(10);
+                        if(estado_puerta == 1)
+                        {
+                              if((mapa[(player.py+40)/40][player.px/40]=='2' && player.dir==0) || (mapa[player.py/40][(player.px+40)/40]=='2' && player.dir==1) || (mapa[player.py/40][player.px/40]=='2' && player.dir==3) || (mapa[player.py/40][player.px/40]=='2'&& player.dir==2))
+>>>>>>> a603ce576a87c0dc2045138cdf8dfa6922d4384f
                               {
                                     play_midi(musica_1,1);
                               }
@@ -232,6 +304,7 @@ int main()
       {
             guardar_ranking(tiempo_juego/60);
       }
+      guardar_ranking(tiempo_juego/60);
       destruir_bitmaps();
       return 0;
 }
@@ -253,7 +326,11 @@ int inicializar_allegro(int ventana_w, int ventana_h)
 
 void guardar_ranking(int tiempo_juego)
 {
+<<<<<<< HEAD
       int n=5,ranking[n], i, a=0, aux=0;
+=======
+      int n=10,ranking[n], i, a=0, aux=0;
+>>>>>>> a603ce576a87c0dc2045138cdf8dfa6922d4384f
       FILE *fdata;
       fdata=fopen("ranking.txt","r+w");
       if(fdata==NULL)
@@ -261,11 +338,20 @@ void guardar_ranking(int tiempo_juego)
             printf("error");
             return;
       }
+<<<<<<< HEAD
       for(i=0;i<n;i++)
       {
             fscanf(fdata,"%d",&ranking[i]);
       }
       for(i=0;i<n;i++)
+=======
+      for(i=0;i<n-1;i++)
+      {
+            fscanf(fdata,"%d",&ranking[i]);
+            printf("%d\n",ranking[i]);
+      }
+      for(i=0;i<n-1;i++)
+>>>>>>> a603ce576a87c0dc2045138cdf8dfa6922d4384f
       {
             if(a == 0 && tiempo_juego < ranking[i])
             {
@@ -273,6 +359,10 @@ void guardar_ranking(int tiempo_juego)
                   ranking[i] = tiempo_juego;
                   tiempo_juego = aux;
                   a = 1;
+<<<<<<< HEAD
+=======
+                  printf("%d\n",i);
+>>>>>>> a603ce576a87c0dc2045138cdf8dfa6922d4384f
             }
             else if(a == 1)
             {
