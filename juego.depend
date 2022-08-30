@@ -7,7 +7,23 @@
 	<allegro.h>
 	<time.h>
 
-1661775899 source:c:\users\demian\desktop\proyecto\gitproyectoprog2\main.c
+1661829478 source:c:\users\demian\desktop\proyecto\gitproyectoprog2\main.c
+	<stdio.h>
+	<string.h>
+	<stdbool.h>
+	<stdlib.h>
+	<allegro.h>
+	<time.h>
+
+1661865934 source:c:\users\demian\desktop\proyecto\respaldos\gitproyectoprog2 - 7\main.c
+	<stdio.h>
+	<string.h>
+	<stdbool.h>
+	<stdlib.h>
+	<allegro.h>
+	<time.h>
+
+1661866893 source:c:\users\demian\desktop\proyecto\gitproyectoprog2 - 7\main.c
 	<stdio.h>
 	<string.h>
 	<stdbool.h>
