@@ -104,12 +104,17 @@ BITMAP *pared_sup_izq;
 BITMAP *pared_sup_der;
 BITMAP *pared_inf_izq;
 BITMAP *pared_inf_der;
+BITMAP *pared_esquinas;
+BITMAP *pared_esquinas_bmp;
+BITMAP *menu;
 MIDI *musica_1;
 MIDI *musica_2;
 
 //DECLARACI�N DE VARIABLES
 char mapa[N][M];
 int tiempo_luz;
+int tiempo_dano;
+int tiempo_juego;
 
 int main()
 {
@@ -123,7 +128,7 @@ int main()
       int nivel=0;
 
       //INICIALIZACION DE VARIABLES
-      player.vida=2;
+      player.vida=3;
       player.llave=0;
       player.encendida=0;
       inicializar_allegro(ventana_w, ventana_h);
@@ -136,9 +141,11 @@ int main()
       {
             if(nivel==0)
             {
-                  if(key[KEY_J])
+                  blit(menu,screen,0,0,0,0,ventana_w,ventana_h);
+                  if(key[KEY_ENTER])
                   {
                         nivel=1;
+                        tiempo_juego=0;
                   }
             }
             else
@@ -186,10 +193,11 @@ int main()
                         {
                               printf("MUERTO\n");
                         }
+                        textprintf(buffer, font,320,15,255,"%d",tiempo_juego);
+                        tiempo_juego++;
                         blit(buffer,screen,0,0,0,0,SCREEN_W,SCREEN_H); //el buffer es dibujado en la pantalla
                         clear_bitmap(buffer);
                         rest(10);
-
                         if(estado_puerta == 1)
                         {
                               if((mapa[(player.py+40)/40][player.px/40]=='2' && player.dir==0) || (mapa[player.py/40][(player.px+40)/40]=='2' && player.dir==1) || (mapa[player.py/40][player.px/40]=='2' && player.dir==3) || (mapa[player.py/40][player.px/40]=='2'&& player.dir==2))
@@ -235,6 +243,7 @@ void crear_bitmaps(int ventana_w, int ventana_h)
       llave=create_bitmap(40,40);
       puerta=create_bitmap(40,40);
       indicador_bateria_bmp=create_bitmap(120,40);
+      pared_esquinas_bmp = create_bitmap(40,40);
       for(i=0;i<MAXENEMIGOS;i++)
       {
             enemigos[i].enemigo=create_bitmap(40,40);
@@ -264,6 +273,8 @@ void cargar_imagenes()
       puerta_bmp=load_bitmap("recursos/imagenes/puerta.bmp",NULL);
       vida_bmp=load_bitmap("recursos/imagenes/indicador_vida.bmp",NULL);
       indicador_bateria_img=load_bitmap("recursos/imagenes/indicador_bateria.bmp",NULL);
+      pared_esquinas = load_bitmap("recursos/imagenes/pared_esquinas.bmp",NULL);
+      menu= load_bitmap("recursos/imagenes/menu.bmp",NULL);
       for(i=0;i<MAXENEMIGOS;i++)
       {
             if(enemigos[i].tipo == 0)
@@ -348,11 +359,15 @@ void pintar_fondo(int ventana_w, int ventana_h)
       {
             for(j=0;j<M;j++)
             {
+                  if(mapa[i][j]=='7') //PARED HORIZONTAL TRANSPARENCIA
+                  {
+                        draw_sprite(buffer,pared_hor,j*40,i*40);
+                  }
                   if(mapa[i][j]=='1')//PARED ABAJO,ARRIBA,DERECHA,IZQUIERDA
                   {
                         if(i==0)
                         {
-                              draw_sprite(buffer,pared_abj,j*40,i*40); 
+                              draw_sprite(buffer,pared_abj,j*40,i*40);
                         }
                         else if(i==N-1)
                         {
@@ -360,18 +375,14 @@ void pintar_fondo(int ventana_w, int ventana_h)
                         }
                         else if(j==0)
                         {
-                              draw_sprite(buffer,pared_der,j*40,i*40); 
+                              draw_sprite(buffer,pared_der,j*40,i*40);
                         }
                         else if(j==M-2)
                         {
-                              draw_sprite(buffer,pared_izq,j*40,i*40); 
-                        }
-                        else
-                        {
-                              draw_sprite(buffer,pared_hor,j*40,i*40);
+                              draw_sprite(buffer,pared_izq,j*40,i*40);
                         }
                   }
-                  if(mapa[i][j]=='4') //PARED ESQUINAS
+                  if(mapa[i][j]=='4') //PARED ESQUINAS EXTREMOS
                   {
                         if(i==0 && j==0)
                         {
@@ -390,18 +401,25 @@ void pintar_fondo(int ventana_w, int ventana_h)
                               draw_sprite(buffer,pared_inf_der,j*40,i*40);
                         }
                   }
-                  if(mapa[i][j]=='5') //PARED HORIZONTAL, VERTICAL, CON TRANSPARENCIA
+                  if(mapa[i][j]=='6') //PARED VERTICAL IZQ
                   {
                         draw_sprite(buffer,pared_ver_izq,j*40,i*40);
                   }
-                  if(mapa[i][j]=='6') //PARED HORIZONTAL, VERTICAL, CON TRANSPARENCIA
+                  if(mapa[i][j]=='5') //PARED VERTICAL DER
                   {
                         draw_sprite(buffer,pared_ver_der,j*40,i*40);
                   }
-                  if(mapa[i][j]=='7') //PARED HORIZONTAL, VERTICAL, CON TRANSPARENCIA
+                  if(mapa[i][j]=='8') //ESQUINA UNION SUPERIOR DER
                   {
-                        draw_sprite(buffer,pared_hor,j*40,i*40);
+                        stretch_blit(pared_esquinas,pared_esquinas_bmp,0,0,40,40,0,0,40,40);
+                        draw_sprite(buffer,pared_esquinas_bmp,j*40,i*40);
                   }
+                  if(mapa[i][j]=='9') //ESQUINA UNION SUPERIOR IZQ
+                  {
+                        stretch_blit(pared_esquinas,pared_esquinas_bmp,40,0,40,40,0,0,40,40);
+                        draw_sprite(buffer,pared_esquinas_bmp,j*40,i*40);
+                  }
+
             }
       }
 }
@@ -601,7 +619,7 @@ void mover_personaje(int estado_puerta)
       if(key[KEY_D]) //movimiento hacia la DERECHA cuando se presiona la tecla D
       {
             player.dir=3;
-            if(mapa[(player.py+8)/40][(player.px+44)/40] != '1' && mapa[(player.py+32)/40][(player.px+44)/40] != '1' && mapa[(player.py+4)/40][(player.px+44)/40]!='2' && mapa[(player.py+36)/40][(player.px+44)/40]!='2'&& mapa[(player.py+4)/40][(player.px+44)/40]!='3' && mapa[(player.py+36)/40][(player.px+44)/40]!='3'&& mapa[(player.py+8)/40][(player.px+44)/40] != '6' && mapa[(player.py+32)/40][(player.px+44)/40] != '6') //si la posici�n del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
+            if(mapa[(player.py+8)/40][(player.px+44)/40] != '1' && mapa[(player.py+32)/40][(player.px+44)/40] != '1' && mapa[(player.py+4)/40][(player.px+44)/40]!='2' && mapa[(player.py+36)/40][(player.px+44)/40]!='2'&& mapa[(player.py+8)/40][(player.px+6)/40] != '5' && mapa[(player.py+32)/40][(player.px+6)/40] != '5'&& mapa[(player.py+8)/40][(player.px+44)/40] != '6' && mapa[(player.py+32)/40][(player.px+44)/40] != '6') //si la posici�n del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
             {
                   player.px=player.px+player.vel_pasos;
             }
@@ -613,7 +631,7 @@ void mover_personaje(int estado_puerta)
       else if(key[KEY_A]) //movimiento hacia la IZQUIERDA cuando se presiona la tecla A
       {
             player.dir=1;
-            if(mapa[(player.py+8)/40][(player.px-4)/40] != '1' && mapa[(player.py+32)/40][(player.px-4)/40] != '1' && mapa[(player.py+4)/40][(player.px-4)/40]!='2' && mapa[(player.py+36)/40][(player.px-4)/40]!='2' && mapa[(player.py+4)/40][(player.px-4)/40]!='3' && mapa[(player.py+36)/40][(player.px-4)/40]!='3') //si la posici�n del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
+            if(mapa[(player.py+8)/40][(player.px-4)/40] != '1' && mapa[(player.py+32)/40][(player.px-4)/40] != '1' && mapa[(player.py+4)/40][(player.px-4)/40]!='2' && mapa[(player.py+36)/40][(player.px-4)/40]!='2'&& mapa[(player.py+8)/40][(player.px-4)/40] != '5' && mapa[(player.py+32)/40][(player.px+6)/40] != '5'&& mapa[(player.py+8)/40][(player.px+20)/40] != '6' && mapa[(player.py+32)/40][(player.px+20)/40] != '6') //si la posici�n del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
             {
                   player.px=player.px-player.vel_pasos;
             }
@@ -625,7 +643,7 @@ void mover_personaje(int estado_puerta)
       else if(key[KEY_W]) //movimiento hacia ARRIBA cuando se presiona la tecla W
       {
             player.dir=0;
-            if(mapa[(player.py-4)/40][(player.px+10)/40]!='1' && mapa[(player.py-4)/40][(player.px+30)/40]!='1' && mapa[(player.py-4)/40][player.px/40]!='2' && mapa[(player.py-4)/40][(player.px+30)/40]!='2' && mapa[(player.py-4)/40][player.px/40]!='3' && mapa[(player.py-4)/40][(player.px+30)/40]!='3') //si la posici�n del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
+            if(mapa[(player.py-4)/40][(player.px+10)/40]!='1' && mapa[(player.py-4)/40][(player.px+30)/40]!='1' && mapa[(player.py-4)/40][(player.px+10)/40]!='2' && mapa[(player.py-4)/40][(player.px+30)/40]!='2'&& mapa[(player.py-4)/40][(player.px+10)/40]!='6' && mapa[(player.py+40)/40][(player.px+10)/40]!='6' && mapa[(player.py-4)/40][(player.px+10)/40]!='7' && mapa[(player.py-4)/40][(player.px+30)/40]!='7') //si la posici�n del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
             {
                   player.py=player.py-player.vel_pasos;
             }
@@ -813,9 +831,10 @@ int detect_col_enemigo_player(int i)
       enemigo_y2 = enemigos[i].py+40+diferencia_y;
       if(detec_punto_espacio(enemigo_x1,enemigo_x2,enemigo_y1,enemigo_y2,player.px,player.py) || detec_punto_espacio(enemigo_x1,enemigo_x2,enemigo_y1,enemigo_y2,player.px+40,player.py) || detec_punto_espacio(enemigo_x1,enemigo_x2,enemigo_y1,enemigo_y2,player.px,player.py+40) || detec_punto_espacio(enemigo_x1,enemigo_x2,enemigo_y1,enemigo_y2,player.px+40,player.py+40))
       {
-            if(player.vida>0)
+            if(tiempo_dano == 0 && player.vida>0)
             {
                   player.vida=player.vida - 1;
+                  tiempo_dano=80;
             }
       }
 }
@@ -1053,4 +1072,6 @@ void destruir_bitmaps()
      // destroy_bitmap(enemigo.enemigo);
    //   destroy_bitmap(enemigo.enemigobmp);
 }
+
+
 
