@@ -76,6 +76,7 @@ void cargar_musica();
 void pos_inicial_player();
 void contar_llave();
 void detectar_llaves();
+void guardar_ranking(int tiempo_juego);
 
 BITMAP *buffer; //se declara buffer como tipo bitmap, aqu� se almacenar�n las imagenes
 BITMAP *fondo; //se declara un bitmap para almacenar el archivo de imagen del personaje
@@ -114,7 +115,6 @@ MIDI *musica_2;
 char mapa[N][M];
 int tiempo_luz;
 int tiempo_dano;
-int tiempo_juego;
 
 int main()
 {
@@ -126,6 +126,10 @@ int main()
       int estado_puerta=0;
       int mapa_importado=0;
       int nivel=0;
+    //  int max_nivel=4;
+      int tiempo_juego;
+
+
 
       //INICIALIZACION DE VARIABLES
       player.vida=3;
@@ -137,7 +141,7 @@ int main()
       cargar_imagenes();
       cargar_musica();
       //CICLO DEL JUEGO
-      while (!key[KEY_ESC])//mientras la tecla que se presione sea distinta que esc se mantiene dentro del bucle y por lo tanto el juego se sigue ejecutando
+      while (!key[KEY_ESC] || player.vida == 0)//mientras la tecla que se presione sea distinta que esc se mantiene dentro del bucle y por lo tanto el juego se sigue ejecutando
       {
             if(nivel==0)
             {
@@ -146,6 +150,10 @@ int main()
                   {
                         nivel=1;
                         tiempo_juego=0;
+                        // if(nivel == max_nivel)
+                        // {
+                        //       guardar_ranking(tiempo_juego);
+                        // }
                   }
             }
             else
@@ -160,8 +168,12 @@ int main()
                         // {
                         //       play_midi(musica_2,1);
                         // }
+                        // if(nivel == max_nivel)
+                        // {
+                        //       guardar_ranking(tiempo_juego);
+                        // }
                         importar_nivel(nivel);
-                        elegir_fondo(nivel);
+                        //elegir_fondo(nivel);
                         pos_inicial_player();
                         mapa_importado=1;
                   }
@@ -185,6 +197,11 @@ int main()
                         indicador_bateria(cont_baterias);
                         indicador_vida();
 
+                        if(tiempo_dano>0)
+                        {
+                              tiempo_dano--;
+                        }
+
                         if(cont%2==0)
                         {
                               mover_enemigo();
@@ -193,7 +210,7 @@ int main()
                         {
                               printf("MUERTO\n");
                         }
-                        textprintf(buffer, font,320,15,255,"%d",tiempo_juego);
+                        textprintf(buffer, font,320,15,255,"%d",tiempo_juego/60);
                         tiempo_juego++;
                         blit(buffer,screen,0,0,0,0,SCREEN_W,SCREEN_H); //el buffer es dibujado en la pantalla
                         clear_bitmap(buffer);
@@ -213,6 +230,7 @@ int main()
             }
             cont++;
       }
+      guardar_ranking(tiempo_juego/60);
       destruir_bitmaps();
       return 0;
 }
@@ -229,6 +247,42 @@ int inicializar_allegro(int ventana_w, int ventana_h)
             return -1;
       }
       return 0;
+}
+
+void guardar_ranking(int tiempo_juego)
+{
+      int n=10,ranking[n], i, a=0, aux=0;
+      FILE *fdata;
+      fdata=fopen("ranking.txt","r+w");
+      if(fdata==NULL)
+      {
+            printf("error");
+            return;
+      }
+      for(i=0;i<n-1;i++)
+      {
+            fscanf(fdata,"%d",&ranking[i]);
+            printf("%d\n",ranking[i]);
+      }
+      for(i=0;i<n-1;i++)
+      {
+            if(a == 0 && tiempo_juego < ranking[i])
+            {
+                  aux = ranking[i];
+                  ranking[i] = tiempo_juego;
+                  tiempo_juego = aux;
+                  a = 1;
+                  printf("%d\n",i);
+            }
+            else if(a == 1)
+            {
+                  aux = ranking[i];
+                  ranking[i] = tiempo_juego;
+                  tiempo_juego = aux;
+            }
+            printf("ranking[%d]=%d\n",i,ranking[i]);
+      }
+      fclose(fdata);
 }
 
 void crear_bitmaps(int ventana_w, int ventana_h)
@@ -619,7 +673,7 @@ void mover_personaje(int estado_puerta)
       if(key[KEY_D]) //movimiento hacia la DERECHA cuando se presiona la tecla D
       {
             player.dir=3;
-            if(mapa[(player.py+8)/40][(player.px+44)/40] != '1' && mapa[(player.py+32)/40][(player.px+44)/40] != '1' && mapa[(player.py+4)/40][(player.px+44)/40]!='2' && mapa[(player.py+36)/40][(player.px+44)/40]!='2'&& mapa[(player.py+8)/40][(player.px+6)/40] != '5' && mapa[(player.py+32)/40][(player.px+6)/40] != '5'&& mapa[(player.py+8)/40][(player.px+44)/40] != '6' && mapa[(player.py+32)/40][(player.px+44)/40] != '6') //si la posici�n del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
+            if(mapa[(player.py+8)/40][(player.px+44)/40] != '1' && mapa[(player.py+32)/40][(player.px+44)/40] != '1' && mapa[(player.py+4)/40][(player.px+44)/40]!='2' && mapa[(player.py+36)/40][(player.px+44)/40]!='2'&& mapa[(player.py+8)/40][(player.px+6)/40] != '5' && mapa[(player.py+32)/40][(player.px+6)/40] != '5'&& mapa[(player.py+8)/40][(player.px+44)/40] != '6' && mapa[(player.py+32)/40][(player.px+44)/40] != '6' && mapa[(player.py+8)/40][(player.px+44)/40] != '7' && mapa[(player.py+32)/40][(player.px+44)/40] != '7') //si la posici�n del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
             {
                   player.px=player.px+player.vel_pasos;
             }
@@ -631,7 +685,7 @@ void mover_personaje(int estado_puerta)
       else if(key[KEY_A]) //movimiento hacia la IZQUIERDA cuando se presiona la tecla A
       {
             player.dir=1;
-            if(mapa[(player.py+8)/40][(player.px-4)/40] != '1' && mapa[(player.py+32)/40][(player.px-4)/40] != '1' && mapa[(player.py+4)/40][(player.px-4)/40]!='2' && mapa[(player.py+36)/40][(player.px-4)/40]!='2'&& mapa[(player.py+8)/40][(player.px-4)/40] != '5' && mapa[(player.py+32)/40][(player.px+6)/40] != '5'&& mapa[(player.py+8)/40][(player.px+20)/40] != '6' && mapa[(player.py+32)/40][(player.px+20)/40] != '6') //si la posici�n del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
+            if(mapa[(player.py+8)/40][(player.px-4)/40] != '1' && mapa[(player.py+32)/40][(player.px-4)/40] != '1' && mapa[(player.py+4)/40][(player.px-4)/40]!='2' && mapa[(player.py+36)/40][(player.px-4)/40]!='2'&& mapa[(player.py+8)/40][(player.px-6)/40] != '5' && mapa[(player.py+32)/40][(player.px-6)/40] != '5'&& mapa[(player.py+8)/40][(player.px+20)/40] != '6' && mapa[(player.py+32)/40][(player.px+20)/40] != '6') //si la posici�n del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
             {
                   player.px=player.px-player.vel_pasos;
             }
@@ -655,7 +709,7 @@ void mover_personaje(int estado_puerta)
       else if(key[KEY_S]) //movimiento hacia ABAJO cuando se presiona la tecla S
       {
             player.dir=2;
-            if(mapa[(player.py+44)/40][(player.px+4)/40]!='1' && mapa[(player.py+44)/40][(player.px+30)/40]!='1' && mapa[(player.py+44)/40][player.px/40]!='2' && mapa[(player.py+44)/40][(player.px+30)/40]!='2'&& mapa[(player.py+44)/40][player.px/40]!='3' && mapa[(player.py+44)/40][(player.px+30)/40]!='3') //si la posici�n del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
+            if(mapa[(player.py+44)/40][(player.px+4)/40]!='1' && mapa[(player.py+44)/40][(player.px+30)/40]!='1' && mapa[(player.py+44)/40][player.px/40]!='2' && mapa[(player.py+44)/40][(player.px+30)/40]!='2'&& mapa[(player.py+44)/40][player.px/40]!='3' && mapa[(player.py+44)/40][(player.px+30)/40]!='3'&& mapa[(player.py+44)/40][player.px/40]!='6' && mapa[(player.py+44)/40][(player.px+30)/40]!='6' && mapa[(player.py)/40][player.px+6/40]!='7' && mapa[(player.py)/40][(player.px+30)/40]!='7') //si la posici�n del mapa con posicion en las coordenadas del jugador sean distintas de X (pared)
             {
                   player.py=player.py+player.vel_pasos;
             }
